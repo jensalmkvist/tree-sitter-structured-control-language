@@ -1,0 +1,365 @@
+// ============================================================
+// test.scl - Comprehensive SCL parser test file
+// Tests all keywords, statements and nesting patterns
+// ============================================================
+
+REGION Variable Declarations
+    VAR
+        myBool      : BOOL;
+        myInt       : INT;
+        myDInt      : DINT;
+        myReal      : REAL;
+        myString    : STRING;
+        myWord      : WORD;
+        myCounter   : UDINT;
+        myTimer     : TIME;
+    END_VAR
+
+    VAR_TEMP
+        tempA       : INT;
+        tempB       : REAL;
+        tempResult  : BOOL;
+    END_VAR
+END_REGION
+
+REGION Basic Assignments
+    // Simple assignments
+    #myBool := TRUE;
+    #myInt := 42;
+    #myReal := 3.14;
+    #myString := 'Hello SCL';
+    #myCounter := 0;
+
+    // Global datablock assignments
+    "DB_Process".Status := TRUE;
+    "DB_Process".Counter := #myInt;
+    "DB_Process".Setpoint := 100;
+
+    // Quoted member access
+    "Input"."Start Button" := FALSE;
+    "Input"."Stop Button" := TRUE;
+
+    // Member chains
+    #myBool := "DB_Process".Alarms.Active;
+    "DB_Output".Motor.Speed := #myReal;
+END_REGION
+
+REGION Arithmetic and Expressions
+    // Basic arithmetic
+    #myInt := 10 + 20;
+    #myInt := 100 - 42;
+    #myReal := 3.14 * 2;
+    #myReal := 100 / 4;
+    #myInt := 17 MOD 5;
+
+    // Compound expressions
+    #myReal := (#myInt * 2) + (3.14 / 2);
+    #myInt := (#myCounter + 1) * (#myInt - 5);
+
+    // Boolean expressions
+    #myBool := TRUE AND FALSE;
+    #myBool := TRUE OR FALSE;
+    #myBool := TRUE XOR FALSE;
+    #myBool := NOT FALSE;
+    #myBool := NOT (#myInt > 0);
+
+    // Comparisons
+    #myBool := #myInt = 42;
+    #myBool := #myInt <> 0;
+    #myBool := #myInt > 10;
+    #myBool := #myInt < 100;
+    #myBool := #myInt >= 0;
+    #myBool := #myInt <= 255;
+
+    // Mixed expressions
+    #myBool := (#myInt > 0) AND (#myReal < 100.0);
+    #myBool := (#myInt = 0) OR NOT "DB_Process".Status;
+    #tempResult := NOT "DB_Process".Alarms.Active AND (#myCounter > 0);
+END_REGION
+
+REGION IF Statements
+    // Simple IF
+    IF #myBool THEN
+        #myInt := 1;
+    END_IF;
+
+    // IF ELSE
+    IF #myInt > 0 THEN
+        #myReal := 1.0;
+    ELSE
+        #myReal := 0.0;
+    END_IF;
+
+    // IF ELSIF ELSE
+    IF #myInt > 100 THEN
+        #myString := 'High';
+    ELSIF #myInt > 50 THEN
+        #myString := 'Medium';
+    ELSIF #myInt > 0 THEN
+        #myString := 'Low';
+    ELSE
+        #myString := 'Zero';
+    END_IF;
+
+    // Nested IF
+    IF "DB_Process".Status THEN
+        IF #myInt > 0 THEN
+            IF #myReal > 0.0 THEN
+                "DB_Output".Motor.Run := TRUE;
+            ELSE
+                "DB_Output".Motor.Run := FALSE;
+            END_IF;
+        ELSIF #myInt = 0 THEN
+            "DB_Output".Motor.Speed := 0;
+        ELSE
+            "DB_Output".Motor.Run := FALSE;
+        END_IF;
+    ELSE
+        "DB_Output".Motor.Run := FALSE;
+        "DB_Output".Motor.Speed := 0;
+    END_IF;
+
+    // IF with complex conditions
+    IF (#myInt > 0 AND #myBool) OR NOT "DB_Process".Alarms.Active THEN
+        "DB_Output".StatusLight := TRUE;
+    END_IF;
+
+    // IF with function call result
+    IF NOT "DB_Process".Status AND (#myCounter >= 10) THEN
+        #myBool := FALSE;
+        #myCounter := 0;
+    END_IF;
+END_REGION
+
+REGION FOR Loops
+    // Simple FOR loop
+    FOR #myInt := 0 TO 10 DO
+        #myCounter := #myCounter + 1;
+    END_FOR;
+
+    // FOR with BY step
+    FOR #myInt := 0 TO 100 BY 5 DO
+        "DB_Process".Buffer := #myInt;
+    END_FOR;
+
+    // FOR counting down
+    FOR #myInt := 10 TO 0 BY -1 DO
+        #myCounter := #myCounter - 1;
+    END_FOR;
+
+    // Nested FOR loops
+    FOR #myInt := 0 TO 5 DO
+        FOR #tempA := 0 TO 5 DO
+            IF #myInt = #tempA THEN
+                "DB_Process".Matrix := TRUE;
+            END_IF;
+        END_FOR;
+    END_FOR;
+
+    // FOR with complex body
+    FOR #myInt := 1 TO 10 DO
+        IF #myInt MOD 2 = 0 THEN
+            #myReal := #myReal + 1.0;
+        ELSE
+            #myReal := #myReal - 0.5;
+        END_IF;
+        #myCounter := #myCounter + 1;
+    END_FOR;
+END_REGION
+
+REGION WHILE Loops
+    // Simple WHILE
+    #myInt := 0;
+    WHILE #myInt < 10 DO
+        #myInt := #myInt + 1;
+    END_WHILE;
+
+    // WHILE with complex condition
+    WHILE (#myInt > 0) AND NOT "DB_Process".Alarms.Active DO
+        #myInt := #myInt - 1;
+        #myReal := #myReal * 0.9;
+    END_WHILE;
+
+    // Nested WHILE
+    WHILE #myInt < 100 DO
+        WHILE #myReal > 0.0 DO
+            #myReal := #myReal - 1.0;
+            #myCounter := #myCounter + 1;
+        END_WHILE;
+        #myInt := #myInt + 10;
+    END_WHILE;
+
+    // WHILE with IF inside
+    WHILE NOT "DB_Process".Done DO
+        IF "DB_Process".Error THEN
+            "DB_Output".Alarm := TRUE;
+            #myBool := FALSE;
+        ELSE
+            "DB_Process".Counter := "DB_Process".Counter + 1;
+        END_IF;
+    END_WHILE;
+END_REGION
+
+REGION CASE Statements
+    // Simple CASE
+    CASE #myInt OF
+        0:
+            #myBool := FALSE;
+        1:
+            #myBool := TRUE;
+        2:
+            #myReal := 1.0;
+    END_CASE;
+
+    // CASE with ELSE
+    CASE #myInt OF
+        0:
+            "DB_Output".Mode := FALSE;
+        1:
+            "DB_Output".Mode := TRUE;
+            #myCounter := 0;
+        2:
+            "DB_Output".Mode := TRUE;
+            #myCounter := 10;
+        3:
+            "DB_Output".Mode := FALSE;
+            #myReal := 0.0;
+        ELSE
+            "DB_Output".Mode := FALSE;
+            #myInt := 0;
+            #myReal := 0.0;
+    END_CASE;
+
+    // CASE with nested IF
+    CASE #myInt OF
+        1:
+            IF #myBool THEN
+                "DB_Output".Speed := 100;
+            ELSE
+                "DB_Output".Speed := 0;
+            END_IF;
+        2:
+            IF "DB_Process".Status THEN
+                FOR #tempA := 0 TO 10 DO
+                    #myCounter := #myCounter + 1;
+                END_FOR;
+            END_IF;
+        ELSE
+            #myInt := 0;
+    END_CASE;
+END_REGION
+
+REGION Function Calls
+    // Simple function call no args
+    MyFunction();
+
+    // Positional arguments
+    MyFunction(#myBool);
+
+    // Named parameters - single line
+    MyFunctionBlock(Enable := TRUE, Speed := #myReal);
+
+    // Named parameters - multiline
+    MyFunctionBlock(
+        Enable      := TRUE,
+        Speed       := #myReal,
+        Setpoint    := 100
+    );
+
+    // With global variables as arguments
+    #AlarmBlock(
+        AlarmSignal     := "DB_Process".Alarms.Active,
+        SumAlarmState   := "DB_AlarmSummary".Status,
+        AlarmTexts      := #myString
+    );
+
+    // With NOT expression as argument
+    #SafetyBlock(
+        AlarmSignal     := NOT "Input"."Safety Switch",
+        SumAlarmState   := "DB_AlarmSummary".Status
+    );
+
+    // With OR expression spanning multiple lines as argument
+    #ComplexBlock(
+        AlarmSignal     := "DB_Process".Alarms.Active,
+        SuppressionSignal :=
+            #myBool
+            OR "DB_Process".Inhibit
+            OR NOT "Input"."Enable",
+        SumAlarmState   := "DB_AlarmSummary".Status,
+        AlarmTexts      := #myString
+    );
+
+    // Assigning function call output
+    "DB_Output".Result := #MyCalc(
+        InputA := #myInt,
+        InputB := #tempA
+    );
+END_REGION
+
+REGION Nested Regions
+    REGION Inner Region A
+        #myInt := 1;
+        IF #myBool THEN
+            #myReal := 1.0;
+        END_IF;
+    END_REGION
+
+    REGION Inner Region B
+        FOR #myInt := 0 TO 5 DO
+            CASE #myInt OF
+                0: "DB_Output".Step := FALSE;
+                1: "DB_Output".Step := TRUE;
+                ELSE
+                    "DB_Output".Step := FALSE;
+            END_CASE;
+        END_FOR;
+    END_REGION
+END_REGION
+
+REGION Mixed Nesting
+    // FOR inside IF inside WHILE inside REGION
+    WHILE NOT "DB_Process".Done DO
+        IF "DB_Process".Status THEN
+            FOR #myInt := 0 TO 10 DO
+                CASE #myInt OF
+                    0:
+                        #myBool := FALSE;
+                    5:
+                        #myBool := TRUE;
+                        MyFunctionBlock(
+                            Enable  := #myBool,
+                            Input   := #myInt
+                        );
+                    ELSE
+                        #myCounter := #myCounter + 1;
+                END_CASE;
+            END_FOR;
+        ELSIF NOT "DB_Process".Alarms.Active THEN
+            WHILE #myReal > 0.0 DO
+                #myReal := #myReal - 1.0;
+            END_WHILE;
+        ELSE
+            "DB_Output".Alarm := TRUE;
+        END_IF;
+    END_WHILE;
+END_REGION
+
+REGION Comments Test
+    // Single line comment
+
+    (* Single line block comment *)
+
+    (*
+        Multiline block comment
+        with multiple lines
+        and // nested single line syntax
+        and := assignments that should NOT parse
+        #localVar := TRUE;
+        "DB".Member := FALSE;
+    *)
+
+    // Code after comments should parse fine
+    #myBool := TRUE;
+    "DB_Process".Status := FALSE;
+END_REGION
