@@ -337,7 +337,7 @@ REGION Mixed Nesting
         ELSE
             "DB_Output".Alarm := TRUE;
         END_IF;
-    END_WHILE;
+END_WHILE;
 END_REGION
 
 REGION Comments Test
