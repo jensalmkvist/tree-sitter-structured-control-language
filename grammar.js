@@ -163,7 +163,7 @@ module.exports = grammar({
 
     for_loop: $ => seq(
       'FOR',
-      $.assignment,
+      $.for_assignment,
       'TO',
       $.expression,
       optional(seq('BY', $.expression)),
@@ -171,6 +171,12 @@ module.exports = grammar({
       repeat($._statement),
       'END_FOR',
       ';'
+    ),
+
+    for_assignment: $ => seq(
+      field('left', $._variable),
+      ':=',
+      field('right', $.expression)
     ),
 
     while_loop: $ => seq(

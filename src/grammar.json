@@ -461,7 +461,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "assignment"
+          "name": "for_assignment"
         },
         {
           "type": "STRING",
@@ -510,6 +510,31 @@
         {
           "type": "STRING",
           "value": ";"
+        }
+      ]
+    },
+    "for_assignment": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "left",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_variable"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ":="
+        },
+        {
+          "type": "FIELD",
+          "name": "right",
+          "content": {
+            "type": "SYMBOL",
+            "name": "expression"
+          }
         }
       ]
     },

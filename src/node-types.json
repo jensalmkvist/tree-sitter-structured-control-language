@@ -336,6 +336,40 @@
     }
   },
   {
+    "type": "for_assignment",
+    "named": true,
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "global_variable",
+            "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "plain_identifier",
+            "named": true
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "for_loop",
     "named": true,
     "fields": {},
@@ -353,6 +387,10 @@
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "for_assignment",
           "named": true
         },
         {

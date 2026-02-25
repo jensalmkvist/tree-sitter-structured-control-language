@@ -290,11 +290,6 @@ REGION Function Calls
         AlarmTexts      := #myString
     );
 
-    // Assigning function call output
-    "DB_Output".Result := #MyCalc(
-        InputA := #myInt,
-        InputB := #tempA
-    );
 END_REGION
 
 REGION Nested Regions
