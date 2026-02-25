@@ -602,28 +602,24 @@
       ]
     },
     "case_branch": {
-      "type": "PREC_LEFT",
-      "value": 0,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "case_value"
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
             "type": "SYMBOL",
-            "name": "case_value"
-          },
-          {
-            "type": "STRING",
-            "value": ":"
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "_statement"
-            }
+            "name": "_statement"
           }
-        ]
-      }
+        }
+      ]
     },
     "case_value": {
       "type": "CHOICE",
@@ -1072,7 +1068,11 @@
       "name": "comment"
     }
   ],
-  "conflicts": [],
+  "conflicts": [
+    [
+      "case_branch"
+    ]
+  ],
   "precedences": [],
   "externals": [],
   "inline": [],

@@ -15,6 +15,11 @@ module.exports = grammar({
     $.comment
   ],
 
+  conflicts: $ => [
+    [$.case_branch],
+  ],
+
+
   rules: {
     source_file: $ => repeat($._statement),
 
@@ -187,11 +192,11 @@ module.exports = grammar({
       ';'
     ),
 
-    case_branch: $ => prec.left(seq(
+    case_branch: $ => seq(
       $.case_value,
       ':',
       repeat($._statement)
-    )),
+    ),
 
     case_value: $ => choice(
       $.integer,
