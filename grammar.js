@@ -127,6 +127,13 @@ module.exports = grammar({
       ';'
     ),
 
+    function_call_expression: $ => seq(
+      field('name', $._variable),
+      '(',
+      optional($.argument_list),
+      ')'
+    ),
+
     argument_list: $ => seq(
       $.argument,
       repeat(seq(',', $.argument))
@@ -228,6 +235,7 @@ module.exports = grammar({
       $.float,
       $.string,
       $.time_literal,
+      $.function_call_expression,
       $._variable,
       seq('(', $.expression, ')')
     ),

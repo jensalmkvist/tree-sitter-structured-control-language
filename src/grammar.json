@@ -514,6 +514,39 @@
         }
       ]
     },
+    "function_call_expression": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_variable"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "argument_list"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
     "argument_list": {
       "type": "SEQ",
       "members": [
@@ -1102,6 +1135,10 @@
         {
           "type": "SYMBOL",
           "name": "time_literal"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "function_call_expression"
         },
         {
           "type": "SYMBOL",

@@ -337,6 +337,10 @@
           "named": true
         },
         {
+          "type": "function_call_expression",
+          "named": true
+        },
+        {
           "type": "global_variable",
           "named": true
         },
@@ -466,6 +470,44 @@
   },
   {
     "type": "function_call",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "global_variable",
+            "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "plain_identifier",
+            "named": true
+          },
+          {
+            "type": "subscript",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "argument_list",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "function_call_expression",
     "named": true,
     "fields": {
       "name": {
@@ -1309,11 +1351,11 @@
   },
   {
     "type": "string",
-    "named": true
+    "named": false
   },
   {
     "type": "string",
-    "named": false
+    "named": true
   },
   {
     "type": "then",
