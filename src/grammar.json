@@ -47,6 +47,10 @@
         {
           "type": "SYMBOL",
           "name": "return_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "exit_statement"
         }
       ]
     },
@@ -285,8 +289,17 @@
                 "value": "."
               },
               {
-                "type": "SYMBOL",
-                "name": "plain_identifier"
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "plain_identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "db_identifier"
+                  }
+                ]
               },
               {
                 "type": "CHOICE",
@@ -439,6 +452,28 @@
             {
               "type": "STRING",
               "value": "return"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ";"
+        }
+      ]
+    },
+    "exit_statement": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "EXIT"
+            },
+            {
+              "type": "STRING",
+              "value": "exit"
             }
           ]
         },

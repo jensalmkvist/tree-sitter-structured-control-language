@@ -35,7 +35,8 @@ module.exports = grammar({
       $.case_statement,
       $.var_block,
       $.region,
-      $.return_statement
+      $.return_statement,
+      $.exit_statement
     ),
 
     // -------------------------------------------------------------------------
@@ -86,7 +87,7 @@ module.exports = grammar({
       '#',
       $.plain_identifier,
       optional($.subscript),
-      repeat(seq('.', $.plain_identifier, optional($.subscript)))
+      repeat(seq('.', choice($.plain_identifier, $.db_identifier), optional($.subscript)))
     ),
 
     global_variable: $ => seq(
@@ -103,10 +104,8 @@ module.exports = grammar({
       seq($.plain_identifier, optional($.subscript))
     ),
 
-    return_statement: $ => seq(
-      choice('RETURN', 'return'),
-      ';'
-    ),
+    return_statement: $ => seq(choice('RETURN', 'return'), ';'),
+    exit_statement: $ => seq(choice('EXIT', 'exit'), ';'),
 
     // -------------------------------------------------------------------------
     // Statements

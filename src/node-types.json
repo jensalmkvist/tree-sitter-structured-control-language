@@ -133,6 +133,10 @@
           "named": true
         },
         {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
           "type": "for_loop",
           "named": true
         },
@@ -181,6 +185,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
           "named": true
         },
         {
@@ -278,6 +286,10 @@
           "named": true
         },
         {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
           "type": "expression",
           "named": true
         },
@@ -311,6 +323,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "exit_statement",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "expression",
@@ -427,6 +444,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
           "named": true
         },
         {
@@ -588,6 +609,10 @@
           "named": true
         },
         {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
           "type": "expression",
           "named": true
         },
@@ -631,6 +656,10 @@
       "required": true,
       "types": [
         {
+          "type": "db_identifier",
+          "named": true
+        },
+        {
           "type": "plain_identifier",
           "named": true
         },
@@ -655,6 +684,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
           "named": true
         },
         {
@@ -712,6 +745,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
           "named": true
         },
         {
@@ -835,6 +872,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
           "named": true
         },
         {
@@ -1018,6 +1059,10 @@
   },
   {
     "type": "END_WHILE",
+    "named": false
+  },
+  {
+    "type": "EXIT",
     "named": false
   },
   {
@@ -1262,6 +1307,10 @@
     "named": false
   },
   {
+    "type": "exit",
+    "named": false
+  },
+  {
     "type": "false",
     "named": false
   },
@@ -1351,11 +1400,11 @@
   },
   {
     "type": "string",
-    "named": false
+    "named": true
   },
   {
     "type": "string",
-    "named": true
+    "named": false
   },
   {
     "type": "then",
