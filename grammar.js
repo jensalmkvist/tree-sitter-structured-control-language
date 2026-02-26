@@ -7,6 +7,10 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
+function kw(word) {
+  return choice(word, word.toLowerCase());
+}
+
 module.exports = grammar({
   name: "structured_control_language",
 
@@ -18,7 +22,6 @@ module.exports = grammar({
   conflicts: $ => [
     [$.case_branch],
   ],
-
 
   rules: {
     source_file: $ => repeat($._statement),
@@ -39,22 +42,28 @@ module.exports = grammar({
     // -------------------------------------------------------------------------
 
     region: $ => seq(
-      'REGION',
+      kw('REGION'),
       optional($.region_name),
       repeat($._statement),
-      'END_REGION'
+      kw('END_REGION')
     ),
 
-    region_name: $ => /[^\r\n]+/,
+    region_name: $ => token.immediate(/[^\r\n]+/),
 
     // -------------------------------------------------------------------------
     // Variable blocks
     // -------------------------------------------------------------------------
 
     var_block: $ => seq(
-      choice('VAR', 'VAR_IN', 'VAR_OUT', 'VAR_IN_OUT', 'VAR_TEMP'),
+      choice(
+        kw('VAR_IN_OUT'),
+        kw('VAR_TEMP'),
+        kw('VAR_IN'),
+        kw('VAR_OUT'),
+        kw('VAR')
+      ),
       repeat($.var_declaration),
-      'END_VAR'
+      kw('END_VAR')
     ),
 
     var_declaration: $ => seq(
@@ -66,36 +75,24 @@ module.exports = grammar({
 
     // -------------------------------------------------------------------------
     // Identifiers
-    //
-    // SCL has three kinds of variable reference:
-    //   plain_identifier  ->  foo           (keywords, function names, types)
-    //   local_variable    ->  #foo          (local/temp variables, # prefix)
-    //   global_variable   ->  "DB_name"     (global datablock, quoted)
-    //
-    // Any of these can be followed by member access chains:
-    //   #foo.Bar.Baz
-    //   "DB_name".Member.SubMember
     // -------------------------------------------------------------------------
 
     plain_identifier: $ => /[a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*/,
 
-    // #LocalVar  or  #LocalVar.Member.Sub
     local_variable: $ => seq(
       '#',
       $.plain_identifier,
       repeat(seq('.', $.plain_identifier))
     ),
 
-    // "DB_Name"  or  "DB_Name".Member.Sub  or  "DB_Name"."Quoted Member"
     global_variable: $ => seq(
       $.db_identifier,
-      repeat(seq('.', choice($.plain_identifier, $.db_identifier)))
+      repeat(seq('.', choice($.plain_identifier, $.db_identifier))),
+      optional(seq('.', '#', $.plain_identifier))
     ),
 
-    // The quoted part of a global variable: "DB_AlarmSummary"
     db_identifier: $ => /"[^"]+"/,
 
-    // Any variable that can appear in expressions or on the left of :=
     _variable: $ => choice(
       $.local_variable,
       $.global_variable,
@@ -113,8 +110,6 @@ module.exports = grammar({
       ';'
     ),
 
-    // Function call with optional named or positional arguments
-    // e.g. MyFB(Param1 := #val, Param2 := "DB".x);
     function_call: $ => seq(
       field('name', $._variable),
       '(',
@@ -128,12 +123,15 @@ module.exports = grammar({
       repeat(seq(',', $.argument))
     ),
 
-    // Named param:  ParamName := expression
-    // Positional:   expression
     argument: $ => choice(
       seq(
-        field('param', $.plain_identifier),
+        field('param', choice($.plain_identifier, $.db_identifier)),
         ':=',
+        field('value', $.expression)
+      ),
+      seq(
+        field('param', choice($.plain_identifier, $.db_identifier)),
+        '=>',
         field('value', $.expression)
       ),
       $.expression
@@ -144,32 +142,32 @@ module.exports = grammar({
     // -------------------------------------------------------------------------
 
     if_statement: $ => seq(
-      'IF',
+      kw('IF'),
       $.expression,
-      'THEN',
+      kw('THEN'),
       repeat($._statement),
       repeat($.elsif_clause),
-      optional(seq('ELSE', repeat($._statement))),
-      'END_IF',
+      optional(seq(kw('ELSE'), repeat($._statement))),
+      kw('END_IF'),
       ';'
     ),
 
     elsif_clause: $ => seq(
-      'ELSIF',
+      kw('ELSIF'),
       $.expression,
-      'THEN',
+      kw('THEN'),
       repeat($._statement)
     ),
 
     for_loop: $ => seq(
-      'FOR',
+      kw('FOR'),
       $.for_assignment,
-      'TO',
+      kw('TO'),
       $.expression,
-      optional(seq('BY', $.expression)),
-      'DO',
+      optional(seq(kw('BY'), $.expression)),
+      kw('DO'),
       repeat($._statement),
-      'END_FOR',
+      kw('END_FOR'),
       ';'
     ),
 
@@ -180,21 +178,21 @@ module.exports = grammar({
     ),
 
     while_loop: $ => seq(
-      'WHILE',
+      kw('WHILE'),
       $.expression,
-      'DO',
+      kw('DO'),
       repeat($._statement),
-      'END_WHILE',
+      kw('END_WHILE'),
       ';'
     ),
 
     case_statement: $ => seq(
-      'CASE',
+      kw('CASE'),
       $._variable,
-      'OF',
+      kw('OF'),
       repeat($.case_branch),
-      optional(seq('ELSE', repeat($._statement))),
-      'END_CASE',
+      optional(seq(kw('ELSE'), repeat($._statement))),
+      kw('END_CASE'),
       ';'
     ),
 
@@ -220,23 +218,24 @@ module.exports = grammar({
       $.integer,
       $.float,
       $.string,
+      $.time_literal,
       $._variable,
       seq('(', $.expression, ')')
     ),
 
     binary_expression: $ => choice(
-      // Boolean / bitwise (lowest precedence)
-      prec.left(1, seq($.expression, choice('OR', 'XOR'), $.expression)),
-      prec.left(2, seq($.expression, 'AND', $.expression)),
-      // Comparison
-      prec.left(3, seq($.expression, choice('=', '<>', '<', '>', '<=', '>='), $.expression)),
-      // Arithmetic
+      prec.left(1, seq($.expression, choice(kw('OR'), kw('XOR')), $.expression)),
+      prec.left(2, seq($.expression, kw('AND'), $.expression)),
+      prec.left(3, seq($.expression, '<>', $.expression)),
+      prec.left(3, seq($.expression, '<=', $.expression)),
+      prec.left(3, seq($.expression, '>=', $.expression)),
+      prec.left(3, seq($.expression, choice('=', '<', '>'), $.expression)),
       prec.left(4, seq($.expression, choice('+', '-'), $.expression)),
-      prec.left(5, seq($.expression, choice('*', '/', 'MOD'), $.expression)),
+      prec.left(5, seq($.expression, choice('*', '/', kw('MOD')), $.expression)),
     ),
 
     unary_expression: $ => choice(
-      prec(6, seq('NOT', $.expression)),
+      prec(6, seq(kw('NOT'), $.expression)),
       prec(6, seq('-', $.expression)),
     ),
 
@@ -244,10 +243,12 @@ module.exports = grammar({
     // Literals
     // -------------------------------------------------------------------------
 
-    boolean_literal: $ => choice('TRUE', 'FALSE'),
+    boolean_literal: $ => choice(kw('TRUE'), kw('FALSE')),
+
     integer: $ => /\d+/,
     float: $ => /\d+\.\d+/,
     string: $ => /'(?:[^'\\]|\\.)*'/,
+    time_literal: $ => /[Tt]#[0-9smhd_]+/,
 
     // -------------------------------------------------------------------------
     // Comments
@@ -263,15 +264,16 @@ module.exports = grammar({
     // -------------------------------------------------------------------------
 
     type: $ => choice(
-      'BOOL', 'BYTE', 'WORD', 'DWORD', 'LWORD',
-      'SINT', 'INT', 'DINT', 'LINT',
-      'USINT', 'UINT', 'UDINT', 'ULINT',
-      'REAL', 'LREAL',
-      'TIME', 'LTIME',
-      'DATE', 'LDATE',
-      'TIME_OF_DAY', 'LTIME_OF_DAY',
-      'CHAR', 'WCHAR',
-      'STRING', 'WSTRING'
+      kw('BOOL'), kw('BYTE'),
+      kw('WORD'), kw('DWORD'), kw('LWORD'),
+      kw('SINT'), kw('INT'), kw('DINT'), kw('LINT'),
+      kw('USINT'), kw('UINT'), kw('UDINT'), kw('ULINT'),
+      kw('REAL'), kw('LREAL'),
+      kw('TIME'), kw('LTIME'),
+      kw('DATE'), kw('LDATE'),
+      kw('TIME_OF_DAY'), kw('LTIME_OF_DAY'),
+      kw('CHAR'), kw('WCHAR'),
+      kw('STRING'), kw('WSTRING')
     )
   }
 });

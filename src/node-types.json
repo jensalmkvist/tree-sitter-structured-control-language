@@ -8,6 +8,10 @@
         "required": false,
         "types": [
           {
+            "type": "db_identifier",
+            "named": true
+          },
+          {
             "type": "plain_identifier",
             "named": true
           }
@@ -326,6 +330,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "time_literal",
           "named": true
         },
         {
@@ -803,6 +811,10 @@
     "named": false
   },
   {
+    "type": "=>",
+    "named": false
+  },
+  {
     "type": ">",
     "named": false
   },
@@ -1031,32 +1043,256 @@
     "named": false
   },
   {
+    "type": "and",
+    "named": false
+  },
+  {
+    "type": "bool",
+    "named": false
+  },
+  {
+    "type": "by",
+    "named": false
+  },
+  {
+    "type": "byte",
+    "named": false
+  },
+  {
+    "type": "case",
+    "named": false
+  },
+  {
+    "type": "char",
+    "named": false
+  },
+  {
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "date",
+    "named": false
   },
   {
     "type": "db_identifier",
     "named": true
   },
   {
+    "type": "dint",
+    "named": false
+  },
+  {
+    "type": "do",
+    "named": false
+  },
+  {
+    "type": "dword",
+    "named": false
+  },
+  {
+    "type": "else",
+    "named": false
+  },
+  {
+    "type": "elsif",
+    "named": false
+  },
+  {
+    "type": "end_case",
+    "named": false
+  },
+  {
+    "type": "end_for",
+    "named": false
+  },
+  {
+    "type": "end_if",
+    "named": false
+  },
+  {
+    "type": "end_region",
+    "named": false
+  },
+  {
+    "type": "end_var",
+    "named": false
+  },
+  {
+    "type": "end_while",
+    "named": false
+  },
+  {
+    "type": "false",
+    "named": false
+  },
+  {
     "type": "float",
     "named": true
+  },
+  {
+    "type": "for",
+    "named": false
+  },
+  {
+    "type": "if",
+    "named": false
+  },
+  {
+    "type": "int",
+    "named": false
   },
   {
     "type": "integer",
     "named": true
   },
   {
+    "type": "ldate",
+    "named": false
+  },
+  {
+    "type": "lint",
+    "named": false
+  },
+  {
+    "type": "lreal",
+    "named": false
+  },
+  {
+    "type": "ltime",
+    "named": false
+  },
+  {
+    "type": "ltime_of_day",
+    "named": false
+  },
+  {
+    "type": "lword",
+    "named": false
+  },
+  {
+    "type": "mod",
+    "named": false
+  },
+  {
+    "type": "not",
+    "named": false
+  },
+  {
+    "type": "of",
+    "named": false
+  },
+  {
+    "type": "or",
+    "named": false
+  },
+  {
     "type": "plain_identifier",
     "named": true
+  },
+  {
+    "type": "real",
+    "named": false
+  },
+  {
+    "type": "region",
+    "named": false
   },
   {
     "type": "region_name",
     "named": true
   },
   {
+    "type": "sint",
+    "named": false
+  },
+  {
+    "type": "string",
+    "named": false
+  },
+  {
     "type": "string",
     "named": true
+  },
+  {
+    "type": "then",
+    "named": false
+  },
+  {
+    "type": "time",
+    "named": false
+  },
+  {
+    "type": "time_literal",
+    "named": true
+  },
+  {
+    "type": "time_of_day",
+    "named": false
+  },
+  {
+    "type": "to",
+    "named": false
+  },
+  {
+    "type": "true",
+    "named": false
+  },
+  {
+    "type": "udint",
+    "named": false
+  },
+  {
+    "type": "uint",
+    "named": false
+  },
+  {
+    "type": "ulint",
+    "named": false
+  },
+  {
+    "type": "usint",
+    "named": false
+  },
+  {
+    "type": "var",
+    "named": false
+  },
+  {
+    "type": "var_in",
+    "named": false
+  },
+  {
+    "type": "var_in_out",
+    "named": false
+  },
+  {
+    "type": "var_out",
+    "named": false
+  },
+  {
+    "type": "var_temp",
+    "named": false
+  },
+  {
+    "type": "wchar",
+    "named": false
+  },
+  {
+    "type": "while",
+    "named": false
+  },
+  {
+    "type": "word",
+    "named": false
+  },
+  {
+    "type": "wstring",
+    "named": false
+  },
+  {
+    "type": "xor",
+    "named": false
   }
 ]
