@@ -34,7 +34,8 @@ module.exports = grammar({
       $.while_loop,
       $.case_statement,
       $.var_block,
-      $.region
+      $.region,
+      $.return_statement
     ),
 
     // -------------------------------------------------------------------------
@@ -79,16 +80,19 @@ module.exports = grammar({
 
     plain_identifier: $ => /[a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*/,
 
+    subscript: $ => seq('[', $.expression, ']'),
+
     local_variable: $ => seq(
       '#',
       $.plain_identifier,
-      repeat(seq('.', $.plain_identifier))
+      optional($.subscript),
+      repeat(seq('.', $.plain_identifier, optional($.subscript)))
     ),
 
     global_variable: $ => seq(
       $.db_identifier,
-      repeat(seq('.', choice($.plain_identifier, $.db_identifier))),
-      optional(seq('.', '#', $.plain_identifier))
+      repeat(seq('.', choice($.plain_identifier, $.db_identifier), optional($.subscript))),
+      optional(seq('.', '#', $.plain_identifier, optional($.subscript)))
     ),
 
     db_identifier: $ => /"[^"]+"/,
@@ -96,7 +100,12 @@ module.exports = grammar({
     _variable: $ => choice(
       $.local_variable,
       $.global_variable,
-      $.plain_identifier
+      seq($.plain_identifier, optional($.subscript))
+    ),
+
+    return_statement: $ => seq(
+      choice('RETURN', 'return'),
+      ';'
     ),
 
     // -------------------------------------------------------------------------
@@ -245,9 +254,9 @@ module.exports = grammar({
 
     boolean_literal: $ => choice(kw('TRUE'), kw('FALSE')),
 
-    integer: $ => /\d+/,
-    float: $ => /\d+\.\d+/,
-    string: $ => /'(?:[^'\\]|\\.)*'/,
+    integer:      $ => /\d+/,
+    float:        $ => /\d+\.\d+/,
+    string:       $ => /'(?:[^'\\]|\\.)*'/,
     time_literal: $ => /[Tt]#[0-9smhd_]+/,
 
     // -------------------------------------------------------------------------
@@ -264,15 +273,15 @@ module.exports = grammar({
     // -------------------------------------------------------------------------
 
     type: $ => choice(
-      kw('BOOL'), kw('BYTE'),
-      kw('WORD'), kw('DWORD'), kw('LWORD'),
-      kw('SINT'), kw('INT'), kw('DINT'), kw('LINT'),
-      kw('USINT'), kw('UINT'), kw('UDINT'), kw('ULINT'),
-      kw('REAL'), kw('LREAL'),
-      kw('TIME'), kw('LTIME'),
-      kw('DATE'), kw('LDATE'),
+      kw('BOOL'),   kw('BYTE'),
+      kw('WORD'),   kw('DWORD'),  kw('LWORD'),
+      kw('SINT'),   kw('INT'),    kw('DINT'),   kw('LINT'),
+      kw('USINT'),  kw('UINT'),   kw('UDINT'),  kw('ULINT'),
+      kw('REAL'),   kw('LREAL'),
+      kw('TIME'),   kw('LTIME'),
+      kw('DATE'),   kw('LDATE'),
       kw('TIME_OF_DAY'), kw('LTIME_OF_DAY'),
-      kw('CHAR'), kw('WCHAR'),
+      kw('CHAR'),   kw('WCHAR'),
       kw('STRING'), kw('WSTRING')
     )
   }
