@@ -1151,6 +1151,10 @@
         {
           "type": "organization_block_declaration",
           "named": true
+        },
+        {
+          "type": "type_declaration",
+          "named": true
         }
       ]
     }
@@ -1290,6 +1294,40 @@
         },
         {
           "type": "struct_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "type_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "db_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "struct_type",
+          "named": true
+        },
+        {
+          "type": "version_pragma",
           "named": true
         }
       ]
@@ -1807,6 +1845,10 @@
     "named": false
   },
   {
+    "type": "END_TYPE",
+    "named": false
+  },
+  {
     "type": "END_VAR",
     "named": false
   },
@@ -1867,6 +1909,10 @@
     "named": false
   },
   {
+    "type": "End_Type",
+    "named": false
+  },
+  {
     "type": "End_Var",
     "named": false
   },
@@ -1912,6 +1958,10 @@
   },
   {
     "type": "End_struct",
+    "named": false
+  },
+  {
+    "type": "End_type",
     "named": false
   },
   {
@@ -2191,6 +2241,10 @@
     "named": false
   },
   {
+    "type": "TYPE",
+    "named": false
+  },
+  {
     "type": "Then",
     "named": false
   },
@@ -2216,6 +2270,10 @@
   },
   {
     "type": "True",
+    "named": false
+  },
+  {
+    "type": "Type",
     "named": false
   },
   {
@@ -2540,6 +2598,10 @@
     "named": false
   },
   {
+    "type": "end_type",
+    "named": false
+  },
+  {
     "type": "end_var",
     "named": false
   },
@@ -2713,6 +2775,10 @@
   },
   {
     "type": "true",
+    "named": false
+  },
+  {
+    "type": "type",
     "named": false
   },
   {

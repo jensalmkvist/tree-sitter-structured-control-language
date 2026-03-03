@@ -74,6 +74,7 @@ module.exports = grammar({
       $.function_declaration,
       $.organization_block_declaration,
       $.data_block_declaration,
+      $.type_declaration,
     )),
 
     // =========================================================================
@@ -141,6 +142,22 @@ module.exports = grammar({
       optional(kw('BEGIN')),
       repeat($._statement),
       kw('END_DATA_BLOCK')
+    ),
+
+    // TYPE "UDT_Name"  -or-  TYPE UDT_Name
+    //   VERSION : n.n          (optional, TIA export)
+    //   STRUCT
+    //     field : type [ := init ] ;
+    //     ...
+    //   END_STRUCT ;
+    // END_TYPE
+    type_declaration: $ => seq(
+      kw('TYPE'),
+      field('name', $._block_name),
+      optional($.version_pragma),
+      $.struct_type,
+      optional(';'),
+      kw('END_TYPE')
     ),
 
     // Block name: plain identifier or quoted "name with spaces"

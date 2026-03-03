@@ -18,6 +18,12 @@
 ["DATA_BLOCK" "data_block" "Data_block" "Data_Block"
  "END_DATA_BLOCK" "end_data_block" "End_data_block" "End_Data_Block"] @keyword
 
+["TYPE" "type" "Type"
+ "END_TYPE" "end_type" "End_type" "End_Type"] @keyword
+
+(type_declaration name: (identifier) @type.definition)
+(type_declaration name: (db_identifier) @type.definition)
+
 ;; Block names
 (function_block_declaration    name: (identifier) @type.definition)
 (function_declaration          name: (identifier) @function)

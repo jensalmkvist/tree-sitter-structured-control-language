@@ -1,0 +1,197 @@
+TYPE "UDT_DeviceConfig"
+VERSION : 0.1
+   STRUCT
+      Header : Struct
+         NumberParameters : Int := 10;
+         AddressParam : Int := 20;
+         AddressDevice : Int := 44;
+         AddressCommand : Int := 100;
+         NumberCommands : Int := 4;
+         Spare01 : Int;
+         Spare02 : Int;
+      END_STRUCT;
+      DeviceIdentification : Struct
+         VendorName : Struct
+            Text : String[64];
+            Index : Int := 16;
+            Subindex : Int := 0;
+            Length : Int := 19;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+         ProductName : Struct
+            Text : String[64];
+            Index : Int := 18;
+            Subindex : Int := 0;
+            Length : Int := 32;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+         SerialNumber : Struct
+            Text : String[64];
+            Index : Int := 21;
+            Subindex : Int := 0;
+            Length : Int := 12;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+         FirmwareRevision : Struct
+            Text : String[64];
+            Index : Int := 23;
+            Subindex : Int := 0;
+            Length : Int := 5;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+      END_STRUCT;
+      Parameters : Struct
+         Param01 : Struct
+            Value : Byte := BYTE#16#00;
+            Index : Int := 12;
+            Subindex : Int := 0;
+            Length : Int := 2;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := TRUE;
+         END_STRUCT;
+         Param02 : Struct
+            Value : DInt := DINT#0;
+            Index : Int := 348;
+            Subindex : Int := 1;
+            Length : Int := 4;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+         Param03 : Struct
+            ValueHigh : Int := 1000;
+            ValueLow : Int := 0;
+            Byte02 : Byte := BYTE#16#00;
+            Byte03 : Byte := BYTE#16#00;
+            Index : Int := 583;
+            Subindex : Int := 0;
+            Length : Int := 2;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := TRUE;
+         END_STRUCT;
+         Param04 : Struct
+            Value : DWord := DWORD#16#0000_0000;
+            Index : Int := 545;
+            Subindex : Int := 0;
+            Length : Int := 4;
+            BlockStat : DWord;
+            RelRead : Bool := TRUE;
+            RelWrite : Bool := FALSE;
+         END_STRUCT;
+      END_STRUCT;
+      Commands : Struct
+         Command_00 : Struct
+            Value : Byte := BYTE#16#82;
+            Index : Int := 2;
+            Subindex : Int := 0;
+            Length : Int := 1;
+            BlockStat : DWord;
+         END_STRUCT;
+         Command_01 : Struct
+            Value : Byte := BYTE#16#A1;
+            Index : Int := 2;
+            Subindex : Int := 0;
+            Length : Int := 1;
+            BlockStat : DWord;
+         END_STRUCT;
+         Command_02 : Struct
+            Value : Byte := BYTE#16#F0;
+            Index : Int := 2;
+            Subindex : Int := 0;
+            Length : Int := 1;
+            BlockStat : DWord;
+         END_STRUCT;
+         Command_03 : Struct
+            Value : Byte := BYTE#16#F1;
+            Index : Int := 2;
+            Subindex : Int := 0;
+            Length : Int := 1;
+            BlockStat : DWord;
+         END_STRUCT;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE
+
+// =============================================================================
+
+TYPE "UDT_Sample"
+VERSION : 0.1
+   STRUCT
+      rValue : Real := 0.0;
+      bValid : Bool := FALSE;
+      iIndex : Int := 0;
+      sLabel : String[32];
+   END_STRUCT;
+
+END_TYPE
+
+// =============================================================================
+
+TYPE "UDT_Coordinate"
+VERSION : 0.1
+   STRUCT
+      x : Real := 0.0;
+      y : Real := 0.0;
+   END_STRUCT;
+
+END_TYPE
+
+// =============================================================================
+
+TYPE "UDT_Tool"
+VERSION : 0.1
+   STRUCT
+      sName : String[32];
+      iToolID : Int := 0;
+      rDiameter : Real := 0.0;
+      rLength : Real := 0.0;
+      bActive : Bool := FALSE;
+      iWearCount : Int := 0;
+      Offsets : Struct
+         rX : Real := 0.0;
+         rY : Real := 0.0;
+         rZ : Real := 0.0;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE
+
+// =============================================================================
+
+TYPE "UDT_ProcessData"
+VERSION : 0.1
+   STRUCT
+      "pos1" : Struct
+         mm : Real := 0.0;
+         kN : Real := 0.0;
+      END_STRUCT;
+      "pos2" : Struct
+         mm : Real := 0.0;
+         kN : Real := 0.0;
+      END_STRUCT;
+      "pos3" : Struct
+         mm : Real := 0.0;
+         kN : Real := 0.0;
+      END_STRUCT;
+      "pos4" : Struct
+         mm : Real := 0.0;
+         kN : Real := 0.0;
+      END_STRUCT;
+      "pos5" : Struct
+         mm : Real := 0.0;
+         kN : Real := 0.0;
+      END_STRUCT;
+   END_STRUCT;
+
+END_TYPE

@@ -23,6 +23,10 @@
           {
             "type": "SYMBOL",
             "name": "data_block_declaration"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "type_declaration"
           }
         ]
       }
@@ -530,6 +534,85 @@
             {
               "type": "STRING",
               "value": "End_Data_Block"
+            }
+          ]
+        }
+      ]
+    },
+    "type_declaration": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "TYPE"
+            },
+            {
+              "type": "STRING",
+              "value": "type"
+            },
+            {
+              "type": "STRING",
+              "value": "Type"
+            }
+          ]
+        },
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_block_name"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "version_pragma"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "struct_type"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": ";"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "END_TYPE"
+            },
+            {
+              "type": "STRING",
+              "value": "end_type"
+            },
+            {
+              "type": "STRING",
+              "value": "End_type"
+            },
+            {
+              "type": "STRING",
+              "value": "End_Type"
             }
           ]
         }
