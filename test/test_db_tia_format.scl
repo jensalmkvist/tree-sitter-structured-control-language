@@ -1,0 +1,141 @@
+DATA_BLOCK "DB_Config"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR RETAIN
+      settings : "UDT_Settings";
+      settingsArray : "UDT_Settings_Array";
+      toolList : Array[0..99] Of "UDT_Tool";
+   END_VAR
+   VAR
+      activateFlag : Bool;
+      currentSetID : UInt;
+      currentSetID_Old : UInt;
+      currentSetTypeID : UInt;
+      currentName : String;
+      currentNameDownloaded : String;
+      sequenceActive : Bool;
+      sequenceReadSet : Bool;
+      sequenceSetID : UInt;
+      sequenceSetTypeID : UInt;
+      sequenceName : String;
+      sequenceNameDownloaded : String;
+      toolActive : Bool;
+   END_VAR
+   VAR RETAIN
+      currentTool : "UDT_Tool";
+   END_VAR
+BEGIN
+   settings."param1".value := 0.0;
+   settings."param1".speed := 0.0;
+   settings."param2".value := 0.0;
+   settings."param2".speed := 0.0;
+   settings."param3"."set point" := 0.0;
+   settings."param3"."return point" := 0.0;
+   settings."entry1"."pos A".mm := 0.0;
+   settings."entry1"."pos A"."mm s" := 0.0;
+   settings."entry1"."pos B".mm := 0.0;
+   settings."entry1"."pos B"."mm s" := 0.0;
+   settings."entry2"."pos A".mm := 0.0;
+   settings."entry2"."pos A"."mm s" := 0.0;
+   settings."entry2"."pos B".mm := 0.0;
+   settings."entry2"."pos B"."mm s" := 0.0;
+   settings."force limit".kN := 0.0;
+   settings."force limit".mm := 0.0;
+   settings."timing".cycleTime := 0.0;
+   settings."timing".delayTime := 0.0;
+   settingsArray."step1".activity := 0;
+   settingsArray."step1".function1 := 0;
+   settingsArray."step1".function2 := 0;
+   settingsArray."step2".activity := 0;
+   settingsArray."step2".function1 := 0;
+   settingsArray."step2".function2 := 0;
+   settingsArray."step3".activity := 0;
+   settingsArray."step3".function1 := 0;
+   settingsArray."step3".function2 := 0;
+   activateFlag := FALSE;
+   currentSetID := 0;
+   currentSetTypeID := 0;
+   currentName := '';
+   currentNameDownloaded := '';
+   sequenceActive := FALSE;
+   sequenceReadSet := FALSE;
+   sequenceSetID := 0;
+   sequenceSetTypeID := 0;
+   sequenceName := '';
+   sequenceNameDownloaded := '';
+END_DATA_BLOCK
+
+// =============================================================================
+
+DATA_BLOCK "DB_Setpoints"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR RETAIN
+      rTargetValue   : Real := 0.0;
+      rLimitHigh     : Real := 100.0;
+      rLimitLow      : Real := 0.0;
+      rRampRate      : Real := 1.0;
+      iRecipeSelect  : Int  := 0;
+      bAutoRestart   : Bool := FALSE;
+      sRecipeName    : String[32];
+      aPresets       : Array[0..7] Of Real;
+   END_VAR
+END_DATA_BLOCK
+
+// =============================================================================
+
+DATA_BLOCK "DB_Diagnostics"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR RETAIN
+      iWatchdog    : DInt := 0;
+      iCycleCount  : DInt := 0;
+      rMaxCycle    : Real := 0.0;
+      rMinCycle    : Real := 9999.0;
+      iLastError   : Int  := 0;
+      bProgError   : Bool := FALSE;
+   END_VAR
+END_DATA_BLOCK
+
+// =============================================================================
+
+DATA_BLOCK "DB_SampleBuffer"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR
+      iWriteIdx  : Int  := 0;
+      iCount     : Int  := 0;
+      bFull      : Bool := FALSE;
+      aSlots     : Array[0..99] Of "UDT_Sample";
+   END_VAR
+BEGIN
+   iWriteIdx := 0;
+   iCount    := 0;
+   bFull     := FALSE;
+END_DATA_BLOCK
+
+// =============================================================================
+
+DATA_BLOCK "DB_HMI"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR
+      bCmdStart      : Bool := FALSE;
+      bCmdStop       : Bool := FALSE;
+      bCmdReset      : Bool := FALSE;
+      bCmdAckFaults  : Bool := FALSE;
+      iCmdMode       : Int  := 0;
+      rCmdRef        : Real := 0.0;
+      bStatusRunning : Bool := FALSE;
+      bStatusFault   : Bool := FALSE;
+      bStatusReady   : Bool := FALSE;
+      iStatusState   : Int  := 0;
+      rStatusActual  : Real := 0.0;
+      iActiveFault   : Int  := 0;
+      sFaultText     : String[64];
+      bHMIAlive      : Bool := FALSE;
+      bPLCAlive      : Bool := FALSE;
+      iCommsWatchdog : Int  := 0;
+   END_VAR
+END_DATA_BLOCK

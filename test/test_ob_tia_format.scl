@@ -1,0 +1,139 @@
+ORGANIZATION_BLOCK "OB_Cyclic100ms"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_TEMP
+      i           : Int;
+      tempReal    : Real;
+      tempBool    : Bool;
+      scaledInput : Real;
+   END_VAR
+   VAR CONSTANT
+      CYCLE_TIME  : Real;
+      AREA_NAME   : String;
+   END_VAR
+BEGIN
+	// === Scale analogue inputs ===
+	#scaledInput := FC_ScaleAnalog(
+		iRawValue := "TagTable".iAnalogIn1,
+		rEuMin    := "DB_MachineConfig".rAnalog1Min,
+		rEuMax    := "DB_MachineConfig".rAnalog1Max
+	);
+	"TagTable".rTemp1Scaled := #scaledInput;
+	
+	// === Call main process FB ===
+	"FB_ProcessController_DB"(
+		enable          := "TagTable".bSystemReady,
+		reset           := "TagTable".bResetAll,
+		positionActual  := "TagTable".rPositionActual,
+		positionSetpoint := "DB_Setpoints".rPositionSP,
+		forceLimit      := "DB_MachineConfig".rMaxForce,
+		modeSelect      := "TagTable".iModeSelect,
+		running         => "TagTable".bProcessRunning,
+		outputValue     => "TagTable".rOutputValue,
+		errorCode       => "TagTable".iErrorCode
+	);
+	
+	// === Fault summary ===
+	"TagTable".bAnyFault :=
+		"TagTable".bMotorFault OR
+		"TagTable".bSensorFault OR
+		"TagTable".bComsFault;
+	
+	// === Simple conditional logic ===
+	IF "TagTable".bSystemReady AND NOT "TagTable".bAnyFault THEN
+		"TagTable".bRunPermit := TRUE;
+	ELSIF "TagTable".bAnyFault THEN
+		"TagTable".bRunPermit := FALSE;
+		"TagTable".rOutputValue := 0.0;
+	ELSE
+		"TagTable".bRunPermit := FALSE;
+	END_IF;
+	
+	// === Mode-dependent processing ===
+	CASE "TagTable".iModeSelect OF
+		0:
+			"TagTable".bAutoMode   := TRUE;
+			"TagTable".bManualMode := FALSE;
+		1:
+			"TagTable".bAutoMode   := FALSE;
+			"TagTable".bManualMode := TRUE;
+		2, 3:
+			"TagTable".bAutoMode   := FALSE;
+			"TagTable".bManualMode := FALSE;
+			"TagTable".rOutputValue := 0.0;
+		ELSE
+			"TagTable".iModeSelect := 0;
+	END_CASE;
+	
+	// === Watchdog counter ===
+	"DB_Diagnostics".iWatchdogCounter :=
+		"DB_Diagnostics".iWatchdogCounter + 1;
+	
+	IF "DB_Diagnostics".iWatchdogCounter > DINT#32000 THEN
+		"DB_Diagnostics".iWatchdogCounter := DINT#0;
+	END_IF;
+	
+	// === Log cycle runtime to buffer ===
+	FOR #i := 1 TO 4 DO
+		IF NOT "DB_SampleBuffer".aSlots[#i].bValid THEN
+			"DB_SampleBuffer".aSlots[#i].rValue := #scaledInput;
+			"DB_SampleBuffer".aSlots[#i].bValid := TRUE;
+			EXIT;
+		END_IF;
+	END_FOR;
+	
+END_ORGANIZATION_BLOCK
+
+// =============================================================================
+
+ORGANIZATION_BLOCK "OB_Startup"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_TEMP
+      i : Int;
+   END_VAR
+BEGIN
+	// === Clear all outputs on startup ===
+	"TagTable".bSystemReady    := FALSE;
+	"TagTable".bRunPermit      := FALSE;
+	"TagTable".bAnyFault       := FALSE;
+	"TagTable".bAutoMode       := FALSE;
+	"TagTable".bManualMode     := FALSE;
+	"TagTable".rOutputValue    := 0.0;
+	"TagTable".rTemp1Scaled    := 0.0;
+	"TagTable".rPositionActual := 0.0;
+	
+	// === Initialise diagnostic DB ===
+	"DB_Diagnostics".iWatchdogCounter := DINT#0;
+	"DB_Diagnostics".bProgramError    := FALSE;
+	"DB_Diagnostics".iLastOBError     := 0;
+	
+	// === Clear sample buffer ===
+	FOR #i := 0 TO 99 DO
+		"DB_SampleBuffer".aSlots[#i].rValue := 0.0;
+		"DB_SampleBuffer".aSlots[#i].bValid := FALSE;
+	END_FOR;
+	
+	// === Check fieldbus state ===
+	IF "TagTable".bFieldBusOK THEN
+		"TagTable".bSystemReady := TRUE;
+	ELSE
+		"TagTable".bAnyFault := TRUE;
+	END_IF;
+	
+END_ORGANIZATION_BLOCK
+
+// =============================================================================
+
+ORGANIZATION_BLOCK "OB_ProgramError"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_TEMP
+      oStart_Info : OB_ANY;
+   END_VAR
+BEGIN
+	// Log error info and continue — prevents CPU going to STOP
+	"DB_Diagnostics".iLastOBError  := #oStart_Info.OB_Ev_Class;
+	"DB_Diagnostics".bProgramError := TRUE;
+	
+END_ORGANIZATION_BLOCK

@@ -1,0 +1,223 @@
+FUNCTION "FC_InterpolateTable" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	inputValue : Real;              // Value to look up
+	Point1 : "UDT_Coordinate";     // Table entry 1
+	Point2 : "UDT_Coordinate";     // Table entry 2
+	Point3 : "UDT_Coordinate";     // Table entry 3
+	Point4 : "UDT_Coordinate";     // Table entry 4
+	Point5 : "UDT_Coordinate";     // Table entry 5
+	enableClamp : Bool;             // Clamp output to table bounds
+	scaleFactor : Real;             // Multiplier applied to result
+END_VAR
+VAR_OUTPUT
+	result : Real;                  // Interpolated output
+	outOfRange : Bool;              // TRUE if input outside table bounds
+	segmentIndex : Int;             // Which interval was matched
+END_VAR
+VAR_TEMP
+	i : Int;
+	lo : Real;
+	hi : Real;
+	loVal : Real;
+	hiVal : Real;
+	span : Real;
+	delta : Real;
+	ratio : Real;
+	rawResult : Real;
+	table : Array[1..5] OF "UDT_Coordinate";
+END_VAR
+BEGIN
+	// --- Load input points into local array for indexed access ---
+	#table[1] := #Point1;
+	#table[2] := #Point2;
+	#table[3] := #Point3;
+	#table[4] := #Point4;
+	#table[5] := #Point5;
+	
+	// --- Initialise outputs ---
+	#result := 0.0;
+	#outOfRange := FALSE;
+	#segmentIndex := 0;
+	
+	// --- Check if input is below the first entry ---
+	IF #inputValue < #table[1].x THEN
+		#outOfRange := TRUE;
+		IF #enableClamp THEN
+			#result := #table[1].y * #scaleFactor;
+		END_IF;
+		RETURN;
+	END_IF;
+	
+	// --- Check if input is above the last entry ---
+	IF #inputValue > #table[5].x THEN
+		#outOfRange := TRUE;
+		IF #enableClamp THEN
+			#result := #table[5].y * #scaleFactor;
+		END_IF;
+		RETURN;
+	END_IF;
+	
+	// --- Search for the matching interval ---
+	FOR #i := 1 TO 4 DO
+		#lo   := #table[#i].x;
+		#hi   := #table[#i + 1].x;
+		#loVal := #table[#i].y;
+		#hiVal := #table[#i + 1].y;
+		
+		// Handle both ascending and descending X values
+		IF (
+			(#inputValue >= #lo) AND (#inputValue <= #hi)
+		) OR (
+			(#inputValue <= #lo) AND (#inputValue >= #hi)
+		) THEN
+			#segmentIndex := #i;
+			#span := #hi - #lo;
+			
+			IF #span <> 0.0 THEN
+				#delta := #hiVal - #loVal;
+				#ratio := #delta / #span;
+				#rawResult := #loVal + (#ratio * (#inputValue - #lo));
+			ELSE
+				// Degenerate segment — both X values equal, use lo value
+				#rawResult := #loVal;
+			END_IF;
+			
+			#result := #rawResult * #scaleFactor;
+			RETURN;
+		END_IF;
+	END_FOR;
+	
+	// --- Fallback: use last table value (should not reach here) ---
+	#result := #table[5].y * #scaleFactor;
+	
+END_FUNCTION
+
+// =============================================================================
+
+FUNCTION "FC_RangeCheck" : Bool
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	value   : Real;
+	minVal  : Real;
+	maxVal  : Real;
+	strict  : Bool;    // TRUE = exclusive bounds
+END_VAR
+VAR_TEMP
+	inRange : Bool;
+END_VAR
+BEGIN
+	IF #strict THEN
+		inRange := (#value > #minVal) AND (#value < #maxVal);
+	ELSE
+		inRange := (#value >= #minVal) AND (#value <= #maxVal);
+	END_IF;
+	
+	"FC_RangeCheck" := inRange;
+	
+END_FUNCTION
+
+// =============================================================================
+
+FUNCTION "FC_SelectReal" : Real
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	selector : Int;
+	val0 : Real;
+	val1 : Real;
+	val2 : Real;
+	val3 : Real;
+	defaultVal : Real;
+END_VAR
+BEGIN
+	CASE #selector OF
+		0:
+			"FC_SelectReal" := #val0;
+		1:
+			"FC_SelectReal" := #val1;
+		2:
+			"FC_SelectReal" := #val2;
+		3:
+			"FC_SelectReal" := #val3;
+		ELSE
+			"FC_SelectReal" := #defaultVal;
+	END_CASE;
+	
+END_FUNCTION
+
+// =============================================================================
+
+FUNCTION "FC_ScaleToWord" : Word
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	rValue  : Real;     // Engineering value
+	rMin    : Real;     // EU minimum
+	rMax    : Real;     // EU maximum
+	wRawMin : Word;     // Raw output minimum  e.g. WORD#16#0000
+	wRawMax : Word;     // Raw output maximum  e.g. WORD#16#6C00
+END_VAR
+VAR_TEMP
+	rSpan     : Real;
+	rRawSpan  : Real;
+	rNorm     : Real;
+	rRaw      : Real;
+END_VAR
+BEGIN
+	// Guard: zero span returns raw minimum
+	IF #rMax = #rMin THEN
+		"FC_ScaleToWord" := #wRawMin;
+		RETURN;
+	END_IF;
+	
+	#rSpan    := #rMax - #rMin;
+	#rRawSpan := WORD_TO_REAL(#wRawMax) - WORD_TO_REAL(#wRawMin);
+	#rNorm    := (#rValue - #rMin) / #rSpan;
+	#rRaw     := WORD_TO_REAL(#wRawMin) + (#rNorm * #rRawSpan);
+	
+	// Clamp before conversion
+	IF #rRaw < WORD_TO_REAL(#wRawMin) THEN
+		#rRaw := WORD_TO_REAL(#wRawMin);
+	ELSIF #rRaw > WORD_TO_REAL(#wRawMax) THEN
+		#rRaw := WORD_TO_REAL(#wRawMax);
+	END_IF;
+	
+	"FC_ScaleToWord" := REAL_TO_WORD(#rRaw);
+	
+END_FUNCTION
+
+// =============================================================================
+
+FUNCTION "FC_FindMaxInArray" : Real
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	length : Int;
+END_VAR
+VAR_IN_OUT
+	dataArr : Array[0..99] Of Real;
+END_VAR
+VAR_TEMP
+	i      : Int;
+	maxVal : Real;
+END_VAR
+BEGIN
+	IF #length <= 0 THEN
+		"FC_FindMaxInArray" := 0.0;
+		RETURN;
+	END_IF;
+	
+	#maxVal := #dataArr[0];
+	
+	FOR #i := 1 TO #length - 1 DO
+		IF #dataArr[#i] > #maxVal THEN
+			#maxVal := #dataArr[#i];
+		END_IF;
+	END_FOR;
+	
+	"FC_FindMaxInArray" := #maxVal;
+	
+END_FUNCTION

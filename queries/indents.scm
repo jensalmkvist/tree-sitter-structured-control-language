@@ -1,27 +1,66 @@
-; Indent inside block statements
-(if_statement) @indent
-(elsif_clause) @indent
-(for_loop) @indent
-(while_loop) @indent
-(case_statement) @indent
-(case_branch) @indent
-(region) @indent
+; =============================================================================
+; Indentation queries for Siemens SCL (tree-sitter-structured-control-language)
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; Block declarations
+; -----------------------------------------------------------------------------
+
+(function_block_declaration)     @indent
+(function_declaration)           @indent
+(organization_block_declaration) @indent
+(data_block_declaration)         @indent
+
+"END_FUNCTION_BLOCK" @dedent
+"END_FUNCTION"       @dedent
+"END_ORGANIZATION_BLOCK" @dedent
+"END_DATA_BLOCK"     @dedent
+
+; -----------------------------------------------------------------------------
+; Variable blocks
+; -----------------------------------------------------------------------------
+
 (var_block) @indent
-
-; Indent inside function call argument lists
-(argument_list) @indent
-
-; Dedent at closing keywords
-"END_IF" @dedent
-"END_FOR" @dedent
-"END_WHILE" @dedent
-"END_CASE" @dedent
-"END_REGION" @dedent
 "END_VAR" @dedent
 
-; ELSIF and ELSE dedent from previous block and re-indent
-"ELSIF" @dedent
-"ELSE" @dedent
+; -----------------------------------------------------------------------------
+; Control flow
+; -----------------------------------------------------------------------------
 
-; Closing paren of function call dedents back
+(if_statement)  @indent
+(elsif_clause)  @indent
+(else_clause)   @indent
+(for_statement) @indent
+(while_statement)  @indent
+(repeat_statement) @indent
+(case_statement)   @indent
+(case_element)     @indent
+(region)           @indent
+
+"END_IF"     @dedent
+"END_FOR"    @dedent
+"END_WHILE"  @dedent
+"END_REPEAT" @dedent
+"END_CASE"   @dedent
+"END_REGION" @dedent
+
+; ELSIF / ELSE dedent from previous block then re-indent for their body
+"ELSIF" @dedent
+"ELSE"  @dedent
+
+; UNTIL dedent from repeat body
+"UNTIL" @dedent
+
+; -----------------------------------------------------------------------------
+; Struct / array types
+; -----------------------------------------------------------------------------
+
+(struct_type) @indent
+"END_STRUCT" @dedent
+
+; -----------------------------------------------------------------------------
+; Function call argument lists
+; -----------------------------------------------------------------------------
+
+(argument_list) @indent
 ")" @dedent

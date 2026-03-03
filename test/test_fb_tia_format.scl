@@ -1,0 +1,206 @@
+FUNCTION_BLOCK "FB_ProcessController"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR_INPUT
+	enable : Bool;
+	reset : Bool;
+	positionActual : Real;
+	positionSetpoint : Real;
+	forceLimit : Real;
+	modeSelect : Int;
+END_VAR
+VAR_OUTPUT
+	outputValue : Real;
+	statusWord : Word;
+	errorCode : Int;
+	running : Bool;
+END_VAR
+VAR_IN_OUT
+	processData : "UDT_ProcessData";
+END_VAR
+VAR
+	state : Int;
+	timer1 : TON;
+	timer2 : TP;
+	counter : CTU;
+	lastEnable : Bool;
+	rampValue : Real;
+	faultCount : Int;
+	posArr : Array[1..5] Of Real;
+	forceArr : Array[1..5] Of Real;
+	dataBuffer : Array[0..99] Of "UDT_Sample";
+END_VAR
+VAR_STAT
+	cycleCount : DInt;
+	totalRuntime : Real;
+END_VAR
+VAR_TEMP
+	i : Int;
+	j : Int;
+	tempReal : Real;
+	tempBool : Bool;
+	diffPos : Real;
+	diffForce : Real;
+	faktor : Real;
+	risingEdge : Bool;
+END_VAR
+BEGIN
+	// === Edge detection ===
+	#risingEdge := #enable AND NOT #lastEnable;
+	#lastEnable := #enable;
+	
+	// === Reset logic ===
+	IF #reset THEN
+		#state := 0;
+		#faultCount := 0;
+		#rampValue := 0.0;
+		#outputValue := 0.0;
+		#errorCode := 0;
+		#running := FALSE;
+		RETURN;
+	END_IF;
+	
+	// === Load position and force lookup arrays from process data ===
+	#posArr[1] := #processData."pos1".mm;
+	#posArr[2] := #processData."pos2".mm;
+	#posArr[3] := #processData."pos3".mm;
+	#posArr[4] := #processData."pos4".mm;
+	#posArr[5] := #processData."pos5".mm;
+	#forceArr[1] := #processData."pos1".kN;
+	#forceArr[2] := #processData."pos2".kN;
+	#forceArr[3] := #processData."pos3".kN;
+	#forceArr[4] := #processData."pos4".kN;
+	#forceArr[5] := #processData."pos5".kN;
+	
+	// === Main state machine ===
+	CASE #state OF
+		
+		0: // Idle
+			#running := FALSE;
+			#outputValue := 0.0;
+			#statusWord := WORD#16#0000;
+			IF #enable AND #risingEdge THEN
+				#state := 10;
+				#cycleCount := #cycleCount + DINT#1;
+			END_IF;
+		
+		10: // Starting — run start delay timer
+			#timer1(IN := TRUE, PT := T#500ms);
+			#statusWord := WORD#16#0001;
+			IF #timer1.Q THEN
+				#state := 20;
+			ELSIF NOT #enable THEN
+				#timer1(IN := FALSE, PT := T#500ms);
+				#state := 0;
+			END_IF;
+		
+		20: // Running — interpolate output from lookup table
+			#running := TRUE;
+			#statusWord := WORD#16#0002;
+			
+			// Find interval for current position
+			FOR #i := 1 TO 4 DO
+				IF (#positionActual >= #posArr[#i]) AND
+				   (#positionActual <= #posArr[#i + 1]) THEN
+					#diffPos := #posArr[#i + 1] - #posArr[#i];
+					IF #diffPos <> 0.0 THEN
+						#faktor := (#forceArr[#i + 1] - #forceArr[#i]) / #diffPos;
+						#outputValue := #forceArr[#i] + (#faktor * (#positionActual - #posArr[#i]));
+					ELSE
+						#outputValue := #forceArr[#i];
+					END_IF;
+					EXIT;
+				END_IF;
+			END_FOR;
+			
+			// Clamp to force limit
+			IF #outputValue > #forceLimit THEN
+				#outputValue := #forceLimit;
+				#statusWord := WORD#16#0004;
+			END_IF;
+			
+			IF NOT #enable THEN
+				#state := 30;
+			END_IF;
+		
+		30: // Stopping — ramp down
+			#timer2(IN := TRUE, PT := T#200ms);
+			
+			IF #timer2.Q THEN
+				#outputValue := 0.0;
+				#running := FALSE;
+				#timer2(IN := FALSE, PT := T#200ms);
+				#state := 0;
+			ELSE
+				// Linear ramp to zero
+				#outputValue := #outputValue * REAL#0.8;
+			END_IF;
+		
+		40: // Fault
+			#running := FALSE;
+			#outputValue := 0.0;
+			#statusWord := WORD#16#00FF;
+			
+		ELSE
+			#state := 0;
+	
+	END_CASE;
+	
+	// === Mode-based override ===
+	CASE #modeSelect OF
+		0: // Auto — no override
+			;
+		1: // Manual direct
+			#outputValue := #positionSetpoint;
+		2: // Forced zero
+			#outputValue := 0.0;
+			#running := FALSE;
+		ELSE
+			#errorCode := INT#99;
+	END_CASE;
+	
+	// === WHILE: ramp up to setpoint if below ===
+	WHILE #rampValue < #positionSetpoint AND #running DO
+		#rampValue := #rampValue + REAL#0.5;
+		IF #rampValue > #positionSetpoint THEN
+			#rampValue := #positionSetpoint;
+		END_IF;
+	END_WHILE;
+	
+	// === REPEAT: find first non-zero buffer slot ===
+	#i := 0;
+	REPEAT
+		#i := #i + 1;
+	UNTIL #dataBuffer[#i]."value" <> 0.0 OR #i >= 99
+	END_REPEAT;
+	
+	// === FOR with CONTINUE: accumulate only positive values ===
+	#tempReal := 0.0;
+	FOR #j := 0 TO 99 DO
+		IF #dataBuffer[#j]."value" <= 0.0 THEN
+			CONTINUE;
+		END_IF;
+		#tempReal := #tempReal + #dataBuffer[#j]."value";
+	END_FOR;
+	
+	// === Counter FB call ===
+	#counter(CU := #risingEdge, R := #reset, PV := INT#1000);
+	IF #counter.Q THEN
+		#faultCount := #faultCount + 1;
+		#counter(CU := FALSE, R := TRUE, PV := INT#1000);
+		IF #faultCount > 5 THEN
+			#state := 40;
+			#errorCode := INT#10;
+		END_IF;
+	END_IF;
+	
+	// === Fault injection via global DB ===
+	IF "DB_Diagnostics".bForceError AND #state <> 40 THEN
+		#state := 40;
+		#errorCode := "DB_Diagnostics".iLastOBError;
+	END_IF;
+	
+	// === Runtime accumulation (STAT) ===
+	#totalRuntime := #totalRuntime + REAL#0.01;
+	
+END_FUNCTION_BLOCK
