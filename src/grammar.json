@@ -1030,6 +1030,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "null_statement"
+        },
+        {
+          "type": "SYMBOL",
           "name": "region"
         }
       ]
@@ -1177,6 +1181,10 @@
           "value": ";"
         }
       ]
+    },
+    "null_statement": {
+      "type": "STRING",
+      "value": ";"
     },
     "if_statement": {
       "type": "SEQ",

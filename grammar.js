@@ -232,6 +232,7 @@ module.exports = grammar({
       $.exit_statement,
       $.continue_statement,
       $.return_statement,
+      $.null_statement,
       $.region
     ),
 
@@ -255,6 +256,7 @@ module.exports = grammar({
     exit_statement:     $ => seq(kw('EXIT'),     ';'),
     continue_statement: $ => seq(kw('CONTINUE'), ';'),
     return_statement:   $ => seq(kw('RETURN'),   ';'),
+    null_statement:     $ => ';',
 
     // =========================================================================
     // Control flow

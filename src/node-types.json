@@ -246,6 +246,10 @@
           "named": true
         },
         {
+          "type": "null_statement",
+          "named": true
+        },
+        {
           "type": "region",
           "named": true
         },
@@ -431,6 +435,10 @@
         },
         {
           "type": "invocation_statement",
+          "named": true
+        },
+        {
+          "type": "null_statement",
           "named": true
         },
         {
@@ -702,6 +710,10 @@
           "named": true
         },
         {
+          "type": "null_statement",
+          "named": true
+        },
+        {
           "type": "region",
           "named": true
         },
@@ -795,6 +807,10 @@
         },
         {
           "type": "invocation_statement",
+          "named": true
+        },
+        {
+          "type": "null_statement",
           "named": true
         },
         {
@@ -923,6 +939,11 @@
     }
   },
   {
+    "type": "null_statement",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "organization_block_declaration",
     "named": true,
     "fields": {
@@ -979,6 +1000,10 @@
         },
         {
           "type": "invocation_statement",
+          "named": true
+        },
+        {
+          "type": "null_statement",
           "named": true
         },
         {
@@ -1042,6 +1067,10 @@
         },
         {
           "type": "invocation_statement",
+          "named": true
+        },
+        {
+          "type": "null_statement",
           "named": true
         },
         {
@@ -1160,6 +1189,10 @@
         },
         {
           "type": "invocation_statement",
+          "named": true
+        },
+        {
+          "type": "null_statement",
           "named": true
         },
         {
