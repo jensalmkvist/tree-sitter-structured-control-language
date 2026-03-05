@@ -172,6 +172,8 @@ module.exports = grammar({
       $.identifier,
       ':=',
       $.string_literal,
+      repeat(seq(';', $.identifier, ':=', $.string_literal)),
+      optional(';'),
       '}'
     ),
 
@@ -222,6 +224,7 @@ module.exports = grammar({
 
     var_declaration: $ => seq(
       field('name', choice($.identifier, $.db_identifier)),
+      optional($.attribute_pragma),
       ':',
       field('type', $.type),
       optional(seq(':=', field('initial_value', $.expression))),

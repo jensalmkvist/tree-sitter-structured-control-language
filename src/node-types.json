@@ -1525,6 +1525,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "attribute_pragma",
+          "named": true
+        }
+      ]
     }
   },
   {
