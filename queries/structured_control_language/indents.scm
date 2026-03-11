@@ -1,66 +1,59 @@
 ; =============================================================================
 ; Indentation queries for Siemens SCL (tree-sitter-structured-control-language)
+; Uses new nvim-treesitter indent API: @indent.begin / @indent.end / @indent.branch
 ; =============================================================================
 
 ; -----------------------------------------------------------------------------
 ; Block declarations
 ; -----------------------------------------------------------------------------
 
-(function_block_declaration)     @indent
-(function_declaration)           @indent
-(organization_block_declaration) @indent
-(data_block_declaration)         @indent
+(function_block_declaration)     @indent.begin
+(function_declaration)           @indent.begin
+(organization_block_declaration) @indent.begin
+(data_block_declaration)         @indent.begin
+(type_declaration)               @indent.begin
 
-"END_FUNCTION_BLOCK" @dedent
-"END_FUNCTION"       @dedent
-"END_ORGANIZATION_BLOCK" @dedent
-"END_DATA_BLOCK"     @dedent
+["END_FUNCTION_BLOCK" "END_FUNCTION" "END_ORGANIZATION_BLOCK"
+ "END_DATA_BLOCK" "END_TYPE"] @indent.end
 
 ; -----------------------------------------------------------------------------
 ; Variable blocks
 ; -----------------------------------------------------------------------------
 
-(var_block) @indent
-"END_VAR" @dedent
+(var_block) @indent.begin
+"END_VAR"   @indent.end
 
 ; -----------------------------------------------------------------------------
 ; Control flow
 ; -----------------------------------------------------------------------------
 
-(if_statement)  @indent
-(elsif_clause)  @indent
-(else_clause)   @indent
-(for_statement) @indent
-(while_statement)  @indent
-(repeat_statement) @indent
-(case_statement)   @indent
-(case_element)     @indent
-(region)           @indent
+(if_statement)     @indent.begin
+(for_statement)    @indent.begin
+(while_statement)  @indent.begin
+(repeat_statement) @indent.begin
+(case_statement)   @indent.begin
+(case_element)     @indent.begin
+(region)           @indent.begin
 
-"END_IF"     @dedent
-"END_FOR"    @dedent
-"END_WHILE"  @dedent
-"END_REPEAT" @dedent
-"END_CASE"   @dedent
-"END_REGION" @dedent
+["END_IF" "END_FOR" "END_WHILE" "END_REPEAT" "END_CASE" "END_REGION"] @indent.end
 
-; ELSIF / ELSE dedent from previous block then re-indent for their body
-"ELSIF" @dedent
-"ELSE"  @dedent
+; ELSIF / ELSE are branches — dedent from previous block, re-indent for body
+(elsif_clause) @indent.branch
+(else_clause)  @indent.branch
 
-; UNTIL dedent from repeat body
-"UNTIL" @dedent
+; UNTIL ends the repeat body
+"UNTIL" @indent.branch
 
 ; -----------------------------------------------------------------------------
-; Struct / array types
+; Struct types
 ; -----------------------------------------------------------------------------
 
-(struct_type) @indent
-"END_STRUCT" @dedent
+(struct_type) @indent.begin
+"END_STRUCT"  @indent.end
 
 ; -----------------------------------------------------------------------------
 ; Function call argument lists
 ; -----------------------------------------------------------------------------
 
-(argument_list) @indent
-")" @dedent
+(argument_list) @indent.begin
+")"             @indent.end
