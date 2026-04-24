@@ -11,7 +11,9 @@
 (function_declaration)           @indent.begin
 (organization_block_declaration) @indent.begin
 (data_block_declaration)         @indent.begin
-(type_declaration)               @indent.begin
+(struct_type_declaration)        @indent.begin
+(nvt_type_declaration)           @indent.begin
+(namespace_declaration)          @indent.begin
 
 ["END_FUNCTION_BLOCK" "END_FUNCTION" "END_ORGANIZATION_BLOCK"
  "END_DATA_BLOCK" "END_TYPE"] @indent.end

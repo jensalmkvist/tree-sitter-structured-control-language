@@ -939,9 +939,125 @@
     }
   },
   {
+    "type": "namespace_declaration",
+    "named": true,
+    "fields": {
+      "namespace_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "data_block_declaration",
+          "named": true
+        },
+        {
+          "type": "function_block_declaration",
+          "named": true
+        },
+        {
+          "type": "function_declaration",
+          "named": true
+        },
+        {
+          "type": "nvt_type_declaration",
+          "named": true
+        },
+        {
+          "type": "organization_block_declaration",
+          "named": true
+        },
+        {
+          "type": "struct_type_declaration",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "null_statement",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "nvt_member",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "int_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "nvt_type_declaration",
+    "named": true,
+    "fields": {
+      "base_type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "elementary_type",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "db_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "nvt_member",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "organization_block_declaration",
@@ -1149,11 +1265,19 @@
           "named": true
         },
         {
+          "type": "namespace_declaration",
+          "named": true
+        },
+        {
+          "type": "nvt_type_declaration",
+          "named": true
+        },
+        {
           "type": "organization_block_declaration",
           "named": true
         },
         {
-          "type": "type_declaration",
+          "type": "struct_type_declaration",
           "named": true
         }
       ]
@@ -1250,6 +1374,44 @@
     }
   },
   {
+    "type": "struct_type_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "db_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attribute_pragma",
+          "named": true
+        },
+        {
+          "type": "struct_type",
+          "named": true
+        },
+        {
+          "type": "version_pragma",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "subscript",
     "named": true,
     "fields": {},
@@ -1294,40 +1456,6 @@
         },
         {
           "type": "struct_type",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "type_declaration",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "db_identifier",
-            "named": true
-          },
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "struct_type",
-          "named": true
-        },
-        {
-          "type": "version_pragma",
           "named": true
         }
       ]
@@ -1839,6 +1967,10 @@
     "named": false
   },
   {
+    "type": "END_NAMESPACE",
+    "named": false
+  },
+  {
     "type": "END_ORGANIZATION_BLOCK",
     "named": false
   },
@@ -1903,6 +2035,10 @@
     "named": false
   },
   {
+    "type": "End_Namespace",
+    "named": false
+  },
+  {
     "type": "End_Organization_Block",
     "named": false
   },
@@ -1952,6 +2088,10 @@
   },
   {
     "type": "End_if",
+    "named": false
+  },
+  {
+    "type": "End_namespace",
     "named": false
   },
   {
@@ -2107,11 +2247,19 @@
     "named": false
   },
   {
+    "type": "NAMESPACE",
+    "named": false
+  },
+  {
     "type": "NON_RETAIN",
     "named": false
   },
   {
     "type": "NOT",
+    "named": false
+  },
+  {
+    "type": "Namespace",
     "named": false
   },
   {
@@ -2592,6 +2740,10 @@
     "named": false
   },
   {
+    "type": "end_namespace",
+    "named": false
+  },
+  {
     "type": "end_organization_block",
     "named": false
   },
@@ -2685,6 +2837,10 @@
   },
   {
     "type": "mod",
+    "named": false
+  },
+  {
+    "type": "namespace",
     "named": false
   },
   {
