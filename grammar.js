@@ -13,6 +13,8 @@
  *   - REGION / END_REGION (non-standard, but TIA supports it)
  *   - Attribute pragmas:  { S7_optimized_access := 'TRUE' }
  *   - S5TIME literals: S5T#...
+ *   - NAMESPACE / END_NAMESPACE (TIA software unit export)
+ *   - NVT (named value type) — TYPE Name : BaseType ( A := 0, B := 1 ); END_TYPE
  */
 
 /// <reference types="tree-sitter-cli/dsl" />
@@ -65,17 +67,30 @@ module.exports = grammar({
   rules: {
 
     // =========================================================================
-    // Top-level: a source file is a sequence of block declarations.
+    // Top-level: optional NAMESPACE wrapper, then block / type declarations.
     // All executable statements must live inside a block body.
     // =========================================================================
 
-    source_file: $ => repeat(choice(
+    source_file: $ => choice(
+      $.namespace_declaration,
+      repeat($._source_item),
+    ),
+
+    namespace_declaration: $ => seq(
+      kw('NAMESPACE'),
+      field('namespace_name', $.identifier),
+      repeat($._source_item),
+      kw('END_NAMESPACE')
+    ),
+
+    _source_item: $ => choice(
       $.function_block_declaration,
       $.function_declaration,
       $.organization_block_declaration,
       $.data_block_declaration,
-      $.type_declaration,
-    )),
+      $.struct_type_declaration,
+      $.nvt_type_declaration,
+    ),
 
     // =========================================================================
     // Block declarations (POUs + Data Blocks)
@@ -151,13 +166,40 @@ module.exports = grammar({
     //     ...
     //   END_STRUCT ;
     // END_TYPE
-    type_declaration: $ => seq(
+    struct_type_declaration: $ => seq(
       kw('TYPE'),
       field('name', $._block_name),
+      repeat($.attribute_pragma),
       optional($.version_pragma),
       $.struct_type,
       optional(';'),
       kw('END_TYPE')
+    ),
+
+    // NVT (named value data type) — Siemens enum-like type, often in .nvt files:
+    // TYPE
+    //   MODE : USInt
+    //   ( MANUAL := 0, AUTO := 1 );
+    // END_TYPE
+    nvt_type_declaration: $ => seq(
+      kw('TYPE'),
+      field('name', choice($.identifier, $.db_identifier)),
+      ':',
+      field('base_type', choice($.elementary_type, $.identifier)),
+      '(',
+      optional(seq(
+        $.nvt_member,
+        repeat(seq(',', $.nvt_member))
+      )),
+      ')',
+      optional(';'),
+      kw('END_TYPE')
+    ),
+
+    nvt_member: $ => seq(
+      field('name', $.identifier),
+      ':=',
+      field('value', $.int_literal)
     ),
 
     // Block name: plain identifier or quoted "name with spaces"
@@ -579,9 +621,10 @@ module.exports = grammar({
       $.wstring_literal
     ),
 
-    // TYPE#value  e.g. INT#42  REAL#3.14  BOOL#TRUE  BYTE#16#FF
+    // TYPE#value  e.g. INT#42  REAL#3.14  BOOL#TRUE  BYTE#16#FF  MODE#AUTO (NVT)
     // Wrapped in token() so the lexer commits atomically.
     // Float before int (so 3.14 isn't consumed as 3), based before decimal.
+    // Identifier suffix last: NVT enumeration literals (MODE#MANUAL).
     typed_literal: $ => token(seq(
       /[a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*/,
       '#',
@@ -589,7 +632,8 @@ module.exports = grammar({
         /TRUE|FALSE/,
         /\d+#[0-9A-Fa-f][0-9A-Fa-f_]*/,
         /[+\-]?\d[\d_]*\.[\d_]+([eE][+\-]?\d[\d_]*)?/,
-        /[+\-]?\d[\d_]*/
+        /[+\-]?\d[\d_]*/,
+        /[a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*/
       )
     )),
 
