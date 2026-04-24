@@ -41,6 +41,9 @@
 (version_pragma ["VERSION" "version"] @keyword)
 (version_pragma (float_literal) @number)
 
+;; TITLE pragma (TIA export after block name)
+(title_pragma ["TITLE" "title"] @keyword)
+
 ;; Block-level RETAIN / NON_RETAIN
 (block_attr) @keyword.modifier
 

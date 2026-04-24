@@ -112,6 +112,7 @@ module.exports = grammar({
     function_block_declaration: $ => seq(
       kw('FUNCTION_BLOCK'),
       field('name', $._block_name),
+      optional($.title_pragma),
       repeat($.attribute_pragma),
       optional($.version_pragma),
       optional($.block_attr),
@@ -126,6 +127,7 @@ module.exports = grammar({
       field('name', $._block_name),
       ':',
       field('return_type', $.type),
+      optional($.title_pragma),
       repeat($.attribute_pragma),
       optional($.version_pragma),
       optional($.block_attr),
@@ -138,6 +140,7 @@ module.exports = grammar({
     organization_block_declaration: $ => seq(
       kw('ORGANIZATION_BLOCK'),
       field('name', $._block_name),
+      optional($.title_pragma),
       repeat($.attribute_pragma),
       optional($.version_pragma),
       optional($.block_attr),
@@ -150,6 +153,7 @@ module.exports = grammar({
     data_block_declaration: $ => seq(
       kw('DATA_BLOCK'),
       field('name', $._block_name),
+      optional($.title_pragma),
       repeat($.attribute_pragma),
       optional($.version_pragma),
       optional($.block_attr),
@@ -224,6 +228,13 @@ module.exports = grammar({
       kw('VERSION'),
       ':',
       $.float_literal
+    ),
+
+    // TITLE = '...' / TITLE = "..." — TIA export line after block name (esp. OBs)
+    title_pragma: $ => seq(
+      kw('TITLE'),
+      '=',
+      choice($.string_literal, $.wstring_literal)
     ),
 
     // RETAIN / NON_RETAIN as a bare block-level qualifier (outside any VAR block)
@@ -444,9 +455,24 @@ module.exports = grammar({
       $.struct_type,      // STRUCT ... END_STRUCT
       $.array_type,       // ARRAY[lo..hi] OF type
       $.string_type,      // STRING[n] / WSTRING[n]
+      $.ref_to_type,      // REF_TO _.Unit.TypeName
       $.elementary_type,  // BOOL, INT, REAL, TIME, ...
+      $.qualified_dotted_type, // _.Process.STATE, Unit.Type
       $.db_identifier,    // quoted UDT/FB type reference: "fjellmanTool"
       $.identifier        // plain UDT/FB type reference: MyUDT, TON, CTU
+    ),
+
+    // Namespace / library qualified type: at least one dot (_.Process.STATE)
+    qualified_dotted_type: $ => seq(
+      choice($.identifier, $.db_identifier),
+      repeat1(seq('.', choice($.identifier, $.db_identifier)))
+    ),
+
+    // Reference type (REF_TO accepts plain or dotted target)
+    ref_to_type: $ => seq(
+      kw('REF_TO'),
+      choice($.identifier, $.db_identifier),
+      repeat(seq('.', choice($.identifier, $.db_identifier)))
     ),
 
     struct_type: $ => seq(
@@ -571,6 +597,7 @@ module.exports = grammar({
     _primary_expression: $ => choice(
       $.call_expression,   // func/FB call used as a value
       $._literal,
+      seq($.lvalue, '^'),  // REF dereference: #myRef^
       $.lvalue,
       seq('(', $.expression, ')')
     ),
