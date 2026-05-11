@@ -26,6 +26,7 @@
 (function_block_declaration     name: (identifier)    @type.definition)
 (function_declaration           name: (identifier)    @function)
 (organization_block_declaration name: (identifier)    @type.definition)
+(data_block_declaration         name: (identifier)    @type.definition)
 (struct_type_declaration        name: (identifier)    @type.definition)
 (struct_type_declaration        name: (db_identifier) @type.definition)
 (nvt_type_declaration           name: (identifier)    @type.definition)
@@ -36,6 +37,7 @@
 (function_block_declaration     name: (db_identifier) @type.definition)
 (function_declaration           name: (db_identifier) @function)
 (organization_block_declaration name: (db_identifier) @type.definition)
+(data_block_declaration         name: (db_identifier) @type.definition)
 
 ;; VERSION pragma
 (version_pragma ["VERSION" "version"] @keyword)
@@ -110,6 +112,10 @@
 (string_type) @type.builtin
 
 (type (identifier) @type)
+(type (qualified_dotted_type (identifier) @type))
+(type (qualified_dotted_type (db_identifier) @type))
+(db_instance_type (qualified_dotted_type (identifier) @type))
+(db_instance_type (qualified_dotted_type (db_identifier) @type))
 
 ;; -----------------------------------------------------------------------------
 ;; Variables and member access
