@@ -611,6 +611,22 @@
           "type": "CHOICE",
           "members": [
             {
+              "type": "FIELD",
+              "name": "instance_type",
+              "content": {
+                "type": "SYMBOL",
+                "name": "db_instance_type"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
               "type": "CHOICE",
               "members": [
                 {
@@ -661,6 +677,10 @@
           ]
         }
       ]
+    },
+    "db_instance_type": {
+      "type": "SYMBOL",
+      "name": "qualified_dotted_type"
     },
     "struct_type_declaration": {
       "type": "SEQ",
@@ -4331,6 +4351,10 @@
   "conflicts": [
     [
       "case_element"
+    ],
+    [
+      "qualified_dotted_type",
+      "_access_segment"
     ]
   ],
   "precedences": [],

@@ -382,6 +382,16 @@
     "type": "data_block_declaration",
     "named": true,
     "fields": {
+      "instance_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "db_instance_type",
+            "named": true
+          }
+        ]
+      },
       "name": {
         "multiple": false,
         "required": true,
@@ -467,6 +477,21 @@
         },
         {
           "type": "while_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "db_instance_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "qualified_dotted_type",
           "named": true
         }
       ]

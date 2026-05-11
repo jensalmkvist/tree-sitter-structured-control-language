@@ -62,6 +62,7 @@ module.exports = grammar({
     // (identifier or integer) is syntactically identical to the start of a
     // statement inside the body.  GLR resolves this at parse time.
     [$.case_element],
+    [$.qualified_dotted_type, $._access_segment],
   ],
 
   rules: {
@@ -158,10 +159,14 @@ module.exports = grammar({
       optional($.version_pragma),
       optional($.block_attr),
       repeat($.var_block),
+      // Exported DB instance/type binding line, e.g. `_.Objects.MyType`
+      optional(field('instance_type', $.db_instance_type)),
       optional(kw('BEGIN')),
       repeat($._statement),
       kw('END_DATA_BLOCK')
     ),
+
+    db_instance_type: $ => $.qualified_dotted_type,
 
     // TYPE "UDT_Name"  -or-  TYPE UDT_Name
     //   VERSION : n.n          (optional, TIA export)
