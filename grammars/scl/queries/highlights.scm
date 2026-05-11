@@ -20,8 +20,10 @@
 (function_block_declaration     name: (identifier)    @type.definition)
 (function_declaration           name: (identifier)    @function)
 (organization_block_declaration name: (identifier)    @type.definition)
-(type_declaration               name: (identifier)    @type.definition)
-(type_declaration               name: (db_identifier) @type.definition)
+(struct_type_declaration        name: (identifier)    @type.definition)
+(struct_type_declaration        name: (db_identifier) @type.definition)
+(nvt_type_declaration           name: (identifier)    @type.definition)
+(nvt_type_declaration           name: (db_identifier) @type.definition)
 
 ["TYPE" "type" "Type"
  "END_TYPE" "end_type" "End_type" "End_Type"] @keyword

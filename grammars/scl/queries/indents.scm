@@ -10,7 +10,8 @@
 (function_block_declaration)     @indent
 (function_declaration)           @indent
 (organization_block_declaration) @indent
-(type_declaration)               @indent
+(struct_type_declaration)        @indent
+(nvt_type_declaration)           @indent
 
 "END_FUNCTION_BLOCK"     @dedent
 "END_FUNCTION"           @dedent
