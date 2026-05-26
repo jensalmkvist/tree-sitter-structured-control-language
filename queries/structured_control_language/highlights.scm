@@ -16,6 +16,9 @@
 ["ORGANIZATION_BLOCK" "organization_block" "Organization_block" "Organization_Block"
  "END_ORGANIZATION_BLOCK" "end_organization_block" "End_organization_block" "End_Organization_Block"] @keyword
 
+["DATA_BLOCK" "data_block" "Data_block" "Data_Block"
+ "END_DATA_BLOCK" "end_data_block" "End_data_block" "End_Data_Block"] @keyword
+
 ["TYPE" "type" "Type"
  "END_TYPE" "end_type" "End_type" "End_Type"] @keyword
 
