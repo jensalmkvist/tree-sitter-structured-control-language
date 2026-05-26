@@ -72,10 +72,10 @@ module.exports = grammar({
     // All executable statements must live inside a block body.
     // =========================================================================
 
-    source_file: $ => choice(
+    source_file: $ => repeat1(choice(
       $.namespace_declaration,
-      repeat($._source_item),
-    ),
+      $._source_item,
+    )),
 
     namespace_declaration: $ => seq(
       kw('NAMESPACE'),

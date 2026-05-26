@@ -4,20 +4,20 @@
   "word": "identifier",
   "rules": {
     "source_file": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "namespace_declaration"
-        },
-        {
-          "type": "REPEAT",
-          "content": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "namespace_declaration"
+          },
+          {
             "type": "SYMBOL",
             "name": "_source_item"
           }
-        }
-      ]
+        ]
+      }
     },
     "namespace_declaration": {
       "type": "SEQ",
