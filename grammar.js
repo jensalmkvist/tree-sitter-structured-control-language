@@ -566,6 +566,13 @@ module.exports = grammar({
       optional($.subscript)
     ),
 
+    // Access segment that may be dereferenced with `^` (REF_TO / pointer).
+    // Examples: `refVar^`, `"DB".ptr^`
+    _deref_access_segment: $ => seq(
+      $._access_segment,
+      optional('^')
+    ),
+
     // SCL root: either a local (#) variable or a plain/DB access chain.
     //
     //   #localVar               local variable in FB/FC
@@ -579,13 +586,13 @@ module.exports = grammar({
       // #local chain
       seq(
         '#',
-        $._access_segment,
-        repeat(seq('.', $._access_segment))
+        $._deref_access_segment,
+        repeat(seq('.', $._deref_access_segment))
       ),
       // DB or plain chain (no sigil)
       seq(
-        $._access_segment,
-        repeat(seq('.', $._access_segment))
+        $._deref_access_segment,
+        repeat(seq('.', $._deref_access_segment))
       )
     ),
 
@@ -602,7 +609,6 @@ module.exports = grammar({
     _primary_expression: $ => choice(
       $.call_expression,   // func/FB call used as a value
       $._literal,
-      seq($.lvalue, '^'),  // REF dereference: #myRef^
       $.lvalue,
       seq('(', $.expression, ')')
     ),
