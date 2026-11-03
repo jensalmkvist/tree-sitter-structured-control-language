@@ -1,0 +1,174 @@
+================================================================================
+Block header: TITLE, attributes, AUTHOR/FAMILY/NAME without quotes, VERSION
+================================================================================
+
+FUNCTION_BLOCK "F_Block"
+TITLE = Main Program Sweep (Cycle)
+{ S7_Optimized_Access := 'TRUE' ; Published := 'FALSE' }
+AUTHOR : SafeSys
+FAMILY : x
+NAME : FDRI
+VERSION : 0.1
+//block comment
+   VAR_INPUT 
+      a : Bool;
+   END_VAR
+
+
+BEGIN
+	;
+END_FUNCTION_BLOCK
+
+---
+
+(source_file
+  (function_block_declaration
+    (db_identifier)
+    (title_pragma
+      (title_text))
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal))
+      (attribute
+        (identifier)
+        (string_literal)))
+    (header_property
+      (identifier))
+    (header_property
+      (identifier))
+    (header_property
+      (identifier))
+    (version_pragma
+      (float_literal))
+    (comment)
+    (var_block
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))))
+    (null_statement)))
+
+================================================================================
+Block header: quoted header value and quoted title
+================================================================================
+
+FUNCTION "F_Fc" : Void
+TITLE = "Title in quotes"
+{ S7_Optimized_Access := 'TRUE' }
+AUTHOR : 'a b'
+VERSION : 1.0
+BEGIN
+END_FUNCTION
+
+---
+
+(source_file
+  (function_declaration
+    (db_identifier)
+    (type
+      (elementary_type))
+    (title_pragma
+      (title_text))
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (header_property
+      (string_literal))
+    (version_pragma
+      (float_literal))))
+
+================================================================================
+Header words stay usable as variable names
+================================================================================
+
+FUNCTION_BLOCK "Names"
+   VAR_INPUT 
+      name : String[24];
+      author : Int;
+      family : Int;
+      title : Int;
+      version : Int;
+      unlinked : Bool;
+   END_VAR
+
+BEGIN
+	#name := 'x';
+	#author := #family + #title * #version;
+END_FUNCTION_BLOCK
+
+---
+
+(source_file
+  (function_block_declaration
+    (db_identifier)
+    (var_block
+      (var_declaration
+        (identifier)
+        (type
+          (string_type
+            (int_literal))))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (string_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (binary_expression
+          (expression
+            (lvalue
+              (identifier)))
+          (expression
+            (binary_expression
+              (expression
+                (lvalue
+                  (identifier)))
+              (expression
+                (lvalue
+                  (identifier))))))))))
+
+================================================================================
+Namespace wrapper with a dotted namespace
+================================================================================
+
+NAMESPACE Objects.Sub
+FUNCTION "F" : Void
+BEGIN
+END_FUNCTION
+END_NAMESPACE
+
+---
+
+(source_file
+  (namespace_declaration
+    (namespace_name
+      (identifier)
+      (identifier))
+    (function_declaration
+      (db_identifier)
+      (type
+        (elementary_type)))))

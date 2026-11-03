@@ -1,0 +1,126 @@
+================================================================================
+Chained assignment
+================================================================================
+
+FUNCTION "Chain" : Void
+BEGIN
+	#a := #b := TIME_TCK();
+END_FUNCTION
+
+---
+
+(source_file
+  (function_declaration
+    (db_identifier)
+    (type
+      (elementary_type))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (assignment_expression
+        (lvalue
+          (identifier))
+        (expression
+          (call_expression
+            (lvalue
+              (identifier))))))))
+
+================================================================================
+Compound assignments
+================================================================================
+
+FUNCTION "Compound" : Void
+BEGIN
+	#a += 1;
+	#b -= 1;
+	#c *= 2;
+	#d /= 2;
+	#r ?= #v;
+END_FUNCTION
+
+---
+
+(source_file
+  (function_declaration
+    (db_identifier)
+    (type
+      (elementary_type))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (int_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (int_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (int_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (int_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (identifier))))))
+
+================================================================================
+CASE with ELSE colon and negative selectors
+================================================================================
+
+FUNCTION "Cases" : Void
+BEGIN
+	CASE #s OF
+	    1:
+	        #a := 1;
+	    -1, 2..3:
+	        ;
+	    ELSE :
+	        #a := 0;
+	END_CASE;
+END_FUNCTION
+
+---
+
+(source_file
+  (function_declaration
+    (db_identifier)
+    (type
+      (elementary_type))
+    (case_statement
+      (expression
+        (lvalue
+          (identifier)))
+      (case_element
+        (case_selector_list
+          (case_selector
+            (int_literal)))
+        (assignment_statement
+          (lvalue
+            (identifier))
+          (expression
+            (int_literal))))
+      (case_element
+        (case_selector_list
+          (case_selector
+            (signed_int_literal
+              (int_literal)))
+          (case_selector
+            (int_literal)
+            (int_literal)))
+        (null_statement))
+      (else_clause
+        (statement_list
+          (assignment_statement
+            (lvalue
+              (identifier))
+            (expression
+              (int_literal))))))))
