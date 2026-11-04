@@ -13,7 +13,9 @@
         "nvt"
       ],
       "injection-regex": "^structured_control_language$",
-      "class-name": "TreeSitterStructuredControlLanguage"
+      "class-name": "TreeSitterStructuredControlLanguage",
+      "highlights": "queries/structured_control_language/highlights.scm",
+      "locals": "queries/structured_control_language/locals.scm"
     }
   ],
   "metadata": {

@@ -1,0 +1,153 @@
+FUNCTION_BLOCK "FB_Conveyor"
+// <- keyword
+//             ^ type.definition
+TITLE = Conveyor control
+// <- keyword.directive
+//      ^ string.documentation
+{ S7_Optimized_Access := 'TRUE' }
+//^ attribute
+//                    ^ operator
+//                       ^ string
+//                              ^ punctuation.special
+AUTHOR : Someone
+// <- keyword.directive
+//       ^ string.special
+FAMILY : Demo
+// <- keyword.directive
+//       ^ string.special
+NAME : Conv
+// <- keyword.directive
+//     ^ string.special
+VERSION : 0.1
+// <- keyword.directive
+//        ^ number.float
+NON_RETAIN
+// <- keyword.modifier
+   VAR_INPUT
+// ^ keyword
+      start { S7_SetPoint := 'False'} : Bool;
+//    ^ variable
+//            ^ attribute
+//                           ^ string
+//                                      ^ type.builtin
+      speed : Real := 1.5;
+//    ^ variable
+//            ^ type.builtin
+//                    ^ number.float
+   END_VAR
+   VAR
+      timer : TON_TIME;
+//    ^ variable
+//            ^ type.builtin
+      iec : IEC_TIMER;
+//          ^ type.builtin
+      state : _.Process.STATE;
+//            ^ module.builtin
+//              ^ module
+//                      ^ type
+      buffer : Array[0..#MAX] of "UDT_Item";
+//             ^ type.builtin
+//                   ^ number
+//                      ^ punctuation.special
+//                       ^ constant
+//                            ^ type.builtin
+//                               ^ type
+      text : String[24];
+//           ^ type.builtin
+//                  ^ number
+      ticks : DInt;
+//            ^ type.builtin
+      ref : REF_TO _.Process.Item;
+//          ^ keyword.type
+//                 ^ module.builtin
+//                   ^ module
+//                           ^ type
+      pair : Struct
+//           ^ keyword.type
+         a : Bool;
+//       ^ variable
+      END_STRUCT;
+//    ^ keyword.type
+   END_VAR
+   VAR CONSTANT
+//     ^ keyword.modifier
+      MAX : Int := 9;
+//    ^ constant
+   END_VAR
+
+BEGIN
+   REGION Start conditions
+// ^ keyword.directive
+//        ^ markup.heading
+      // a comment
+//       ^ comment
+      IF #start AND NOT "Global_DB".stop THEN
+//    ^ keyword.conditional
+//       ^ punctuation.special
+//        ^ variable
+//              ^ keyword.operator
+//                      ^ variable.global
+//                                  ^ variable.member
+         #ticks := TIME_TCK();
+//        ^ variable
+//                 ^ function.builtin
+         #speed := INT_TO_REAL(#MAX) * LREAL#2.0;
+//                 ^ function.builtin
+//                              ^ constant
+//                                     ^ number.float
+      END_IF;
+   END_REGION
+// ^ keyword.directive
+
+   #timer(IN := #start, PT := T#5s);
+//  ^ function.call
+//        ^ variable.parameter
+//               ^ variable
+//                            ^ string.special
+   #iec.TON(IN := TRUE, PT := T#1s);
+//  ^ variable
+//      ^ function.builtin
+//                ^ boolean
+   "Instance_DB"(enable := #pair.a);
+// ^ function.call
+//                          ^ variable
+//                               ^ variable.member
+   MOVE_BLK(IN := #buffer[0], COUNT := 2, OUT => #buffer[1]);
+// ^ function.builtin
+//                            ^ variable.parameter
+//                                            ^ operator
+//                                                ^ variable
+   "FC_Helper"(value := 16#FF, flag := BOOL#TRUE, n := INT#-5);
+// ^ function.call
+//                      ^ number
+//                                     ^ boolean
+//                                                     ^ number
+   _.Process.Sub.Report(id := _.Process.MsgID#UNDEF);
+// ^ module.builtin
+//   ^ module
+//           ^ module
+//               ^ function.call
+//                            ^ constant
+   "Out_Tag":P := "Global_DB".flags.%X0;
+// ^ variable.global
+//          ^ punctuation.special
+//                            ^ variable.member
+//                                  ^ variable.member
+   #state := MsgID#RUNNING;
+//           ^ constant
+   #text := WSTRING#"wide";
+//          ^ string
+   ENO := FALSE;
+// ^ variable.builtin
+//        ^ boolean
+   FOR #ticks := 0 TO 3 BY 1 DO
+// ^ keyword.repeat
+//                 ^ keyword.repeat
+//                           ^ keyword.repeat
+      CONTINUE;
+//    ^ keyword.repeat
+   END_FOR;
+   RETURN;
+// ^ keyword.return
+END_FUNCTION_BLOCK
+// <- keyword
