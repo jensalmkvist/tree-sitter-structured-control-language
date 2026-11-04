@@ -1,0 +1,181 @@
+NAMESPACE Process.Line
+// <- keyword
+//        ^ module
+//                ^ module
+TYPE
+   MsgID : USInt (UNDEF := 0, RUNNING := 1, "Stop now" := 2);
+// ^ type.definition
+//         ^ type.builtin
+//                ^ constant
+//                         ^ number
+//                                          ^ constant
+   Level : Int (LOW := -1, HIGH := 16#7F);
+// ^ type.definition
+//              ^ constant
+//                     ^ number
+END_TYPE
+// <- keyword
+
+TYPE "UDT_Item"
+// <- keyword
+//   ^ type.definition
+VERSION : 0.1
+// <- keyword.directive
+   STRUCT
+// ^ keyword.type
+      id { S7_SetPoint := 'True'; ExternalWritable := 'False' } : DInt := 0;
+//    ^ variable
+//         ^ attribute
+//                                ^ attribute
+//                                                    ^ string
+//                                                                ^ type.builtin
+      stamp : DTL;
+//            ^ type.builtin
+      at : Time_Of_Day := TOD#12:30:00;
+//         ^ type.builtin
+//                        ^ string.special
+      day : Date := D#2024-01-15;
+//                  ^ string.special
+      kind : _.Process.Line.MsgID := MsgID#UNDEF;
+//           ^ module.builtin
+//                     ^ module
+//                          ^ type
+//                                   ^ constant
+      cfg : "UDT_Config";
+//          ^ type
+   END_STRUCT;
+END_TYPE
+END_NAMESPACE
+// <- keyword
+
+DATA_BLOCK "DB_Line"
+// <- keyword
+//         ^ variable.global
+TITLE = "Line data (shared)"
+// <- keyword.directive
+//      ^ string.documentation
+{ S7_Optimized_Access := 'TRUE' }
+//^ attribute
+FAMILY : 'line data'
+// <- keyword.directive
+//       ^ string.special
+UNLINKED
+// <- keyword.modifier
+   VAR RETAIN
+// ^ keyword
+//     ^ keyword.modifier
+      items : Array[0..2] of Real := [3(0.0)];
+//    ^ variable
+//            ^ type.builtin
+//                        ^ type.builtin
+//                           ^ type.builtin
+//                                    ^ number
+//                                      ^ number.float
+      pairs : Array[*] of Bool;
+//    ^ variable
+//                        ^ type.builtin
+      speed : LReal := LREAL#1.5;
+//            ^ type.builtin
+//                     ^ number.float
+      delay : Time := T#1h_30m;
+//                    ^ string.special
+      old : S5Time := S5T#2s;
+//          ^ type.builtin
+//                    ^ string.special
+      counter : CTU_INT;
+//              ^ type.builtin
+      ref : Variant;
+//          ^ type.builtin
+   END_VAR
+BEGIN
+   items[1] := 2.5;
+// ^ variable
+//             ^ number.float
+END_DATA_BLOCK
+// <- keyword
+
+DATA_BLOCK "IEC_Timer_DB"
+Var
+// <- keyword
+   x : Int;
+End_Var
+// <- keyword
+TON_TIME
+// <- type.builtin
+Begin
+// <- keyword
+End_Data_Block
+// <- keyword
+
+DATA_BLOCK "Inst_Conveyor"
+   "FB_Conveyor"
+// ^ type
+BEGIN
+END_DATA_BLOCK
+
+FUNCTION "FC_Scale" : Real
+// <- keyword
+//       ^ function
+//                    ^ type.builtin
+   VAR_IN_OUT
+      value : Real;
+   END_VAR
+   VAR_TEMP
+      i : Int;
+   END_VAR
+BEGIN
+   CASE #i OF
+// ^ keyword.conditional
+//       ^ variable
+//         ^ keyword.conditional
+      1, 2:
+//    ^ number
+         #value := SCALE_X(MIN := 0.0, VALUE := #value, MAX := 1.0);
+//                 ^ function.builtin
+//                         ^ variable.parameter
+      ELSE
+//    ^ keyword.conditional
+         "FC_Scale" := #value MOD 2.0;
+//       ^ variable.global
+//                            ^ keyword.operator
+   END_CASE;
+   WHILE #i < 3 DO
+// ^ keyword.repeat
+//          ^ operator
+      #i += 1;
+//       ^ operator
+   END_WHILE;
+   REPEAT
+// ^ keyword.repeat
+      EXIT;
+//    ^ keyword.repeat
+   UNTIL TRUE
+// ^ keyword.repeat
+   END_REPEAT;
+   (* block comment *)
+// ^ comment
+   #value := DINT_TO_REAL(TIME_TO_DINT(T#5s)) / 1000.0;
+//           ^ function.builtin
+//                        ^ function.builtin
+END_FUNCTION
+// <- keyword
+
+ORGANIZATION_BLOCK "Main"
+// <- keyword
+//                 ^ type.definition
+TITLE = Main Program Sweep (Cycle)
+//      ^ string.documentation
+BEGIN
+   REGION
+// ^ keyword.directive
+      "Inst_Conveyor"();
+//    ^ function.call
+      "DB_Line".items[0] := "FC_Scale"(value := "DB_Line".speed);
+//    ^ variable.global
+//              ^ variable.member
+//                          ^ function.call
+//                                     ^ variable.parameter
+//                                                        ^ variable.member
+   END_REGION
+END_ORGANIZATION_BLOCK
+// <- keyword
