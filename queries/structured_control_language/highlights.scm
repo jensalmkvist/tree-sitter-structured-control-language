@@ -32,9 +32,11 @@
 (data_block_declaration         name: (identifier)    @type.definition)
 (struct_type_declaration        name: (identifier)    @type.definition)
 (struct_type_declaration        name: (db_identifier) @type.definition)
-(nvt_type_declaration           name: (identifier)    @type.definition)
-(nvt_type_declaration           name: (db_identifier) @type.definition)
-(namespace_declaration          namespace_name: (identifier) @namespace)
+(nvt_type                       name: (identifier)    @type.definition)
+(nvt_type                       name: (db_identifier) @type.definition)
+(nvt_member                     name: (identifier)    @constant)
+(nvt_member                     name: (db_identifier) @constant)
+(namespace_name (identifier)    @namespace)
 
 ;; Block names — quoted variant
 (function_block_declaration     name: (db_identifier) @type.definition)
@@ -48,6 +50,11 @@
 
 ;; TITLE pragma (TIA export after block name)
 (title_pragma ["TITLE" "title"] @keyword)
+(title_text) @string
+
+;; AUTHOR / FAMILY / NAME header lines
+(header_property key: _ @keyword)
+(header_property value: (identifier) @string)
 
 ;; Block-level RETAIN / NON_RETAIN
 (block_attr) @keyword.modifier
@@ -117,6 +124,8 @@
 (type (identifier) @type)
 (type (qualified_dotted_type (identifier) @type))
 (type (qualified_dotted_type (db_identifier) @type))
+(db_instance_type (identifier) @type)
+(db_instance_type (db_identifier) @type)
 (db_instance_type (qualified_dotted_type (identifier) @type))
 (db_instance_type (qualified_dotted_type (db_identifier) @type))
 
@@ -127,6 +136,8 @@
 (lvalue "#" @punctuation.special)
 (db_identifier) @namespace
 (lvalue (identifier) @variable)
+(slice) @property
+(peripheral_access) @punctuation.special
 
 ;; -----------------------------------------------------------------------------
 ;; Function / block invocations
@@ -152,7 +163,7 @@
 
 (unary_expression ["NOT" "not" "Not" "-"] @operator)
 
-":=" @operator
+[":=" "+=" "-=" "*=" "/=" "?="] @operator
 "=>" @operator
 
 ;; -----------------------------------------------------------------------------
@@ -177,8 +188,8 @@
 ;; -----------------------------------------------------------------------------
 
 (attribute_pragma "{" @punctuation.bracket "}" @punctuation.bracket)
-(attribute_pragma (identifier)     @attribute)
-(attribute_pragma (string_literal) @string)
+(attribute name: (identifier) @attribute)
+(attribute value: (string_literal) @string)
 
 ;; -----------------------------------------------------------------------------
 ;; Punctuation

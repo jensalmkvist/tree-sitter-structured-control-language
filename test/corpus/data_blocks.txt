@@ -1,0 +1,264 @@
+================================================================================
+Instance DB: type line holding only a quoted name
+================================================================================
+
+NAMESPACE Objects
+DATA_BLOCK "Inst"
+{ S7_Optimized_Access := 'TRUE' ; Published := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_name"
+
+BEGIN
+   "a b"[1,2].x := T#3S;
+   y := 5;
+
+END_DATA_BLOCK
+END_NAMESPACE
+
+---
+
+(source_file
+  (namespace_declaration
+    (namespace_name
+      (identifier))
+    (data_block_declaration
+      (db_identifier)
+      (attribute_pragma
+        (attribute
+          (identifier)
+          (string_literal))
+        (attribute
+          (identifier)
+          (string_literal)))
+      (version_pragma
+        (float_literal))
+      (block_attr)
+      (db_instance_type
+        (db_identifier))
+      (assignment_statement
+        (lvalue
+          (db_identifier)
+          (subscript
+            (expression
+              (int_literal))
+            (expression
+              (int_literal)))
+          (identifier))
+        (expression
+          (time_literal)))
+      (assignment_statement
+        (lvalue
+          (identifier))
+        (expression
+          (int_literal))))))
+
+================================================================================
+Instance DB of a library type with a multi-line attribute list
+================================================================================
+
+DATA_BLOCK "Tmr"
+{InstructionName := 'TON_TIME';
+ LibVersion := '1.0';
+ S7_Optimized_Access := 'TRUE' }
+AUTHOR : SIMATIC
+VERSION : 1.0
+NON_RETAIN
+TON_TIME
+
+BEGIN
+
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal))
+      (attribute
+        (identifier)
+        (string_literal))
+      (attribute
+        (identifier)
+        (string_literal)))
+    (header_property
+      (identifier))
+    (version_pragma
+      (float_literal))
+    (block_attr)
+    (db_instance_type
+      (identifier))))
+
+================================================================================
+DB of a type in another namespace
+================================================================================
+
+DATA_BLOCK "Db"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+_.Process.UdtX
+
+BEGIN
+
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (version_pragma
+      (float_literal))
+    (block_attr)
+    (db_instance_type
+      (qualified_dotted_type
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Non-optimized global DB with STRUCT and unquoted header values
+================================================================================
+
+DATA_BLOCK "F_GLOBDB_x"
+{ S7_Optimized_Access := 'FALSE' }
+AUTHOR : SafeSys
+NAME : F_GLOBDB
+VERSION : 0.1
+NON_RETAIN
+   STRUCT 
+      a : Bool;
+   END_STRUCT;
+
+
+BEGIN
+   a := TRUE;
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (header_property
+      (identifier))
+    (header_property
+      (identifier))
+    (version_pragma
+      (float_literal))
+    (block_attr)
+    (struct_type
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (bool_literal)))))
+
+================================================================================
+Global DB with RETAIN and DB_SPECIFIC sections
+================================================================================
+
+DATA_BLOCK "G"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR RETAIN
+      a : Int;
+   END_VAR
+   VAR DB_SPECIFIC
+      b : Int;
+   END_VAR
+   VAR 
+      c : Array[0..3] of Int;
+   END_VAR
+
+
+BEGIN
+   c[0] := 1;
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (version_pragma
+      (float_literal))
+    (block_attr)
+    (var_block
+      (var_attr)
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))))
+    (var_block
+      (var_attr)
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))))
+    (var_block
+      (var_declaration
+        (identifier)
+        (type
+          (array_type
+            (array_dimension
+              (int_literal)
+              (int_literal))
+            (type
+              (elementary_type))))))
+    (assignment_statement
+      (lvalue
+        (identifier)
+        (subscript
+          (expression
+            (int_literal))))
+      (expression
+        (int_literal)))))
+
+================================================================================
+Global DB without members
+================================================================================
+
+DATA_BLOCK "Empty"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+
+BEGIN
+
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (version_pragma
+      (float_literal))
+    (block_attr)))

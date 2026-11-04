@@ -1,0 +1,176 @@
+================================================================================
+Time literals with units in any case, as Portal prints them
+================================================================================
+
+FUNCTION_BLOCK "Times"
+   VAR 
+      t1 : Time := T#3S;
+      t2 : Time := T#2M;
+      t3 : Time := T#1H;
+      t4 : Time := T#0S;
+      t5 : Time := T#500ms;
+      t6 : Time := T#0MS;
+      t7 : Time := T#1h_30m;
+      t8 : LTime := LT#5ns;
+      t9 : S5Time := S5T#10S;
+   END_VAR
+
+BEGIN
+	#tmr(IN := TRUE, PT := T#1S);
+	#t1 := t#5s;
+END_FUNCTION_BLOCK
+
+---
+
+(source_file
+  (function_block_declaration
+    (db_identifier)
+    (var_block
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (time_literal)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type))
+        (expression
+          (s5time_literal))))
+    (invocation_statement
+      (lvalue
+        (identifier))
+      (argument_list
+        (argument
+          (identifier)
+          (expression
+            (bool_literal)))
+        (argument
+          (identifier)
+          (expression
+            (time_literal)))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (time_literal)))))
+
+================================================================================
+Typed, based and named-value literals
+================================================================================
+
+FUNCTION "Lits" : Void
+BEGIN
+	#a := 16#FF;
+	#b := LREAL#1.0;
+	#c := CHAR#'a';
+	#d := WORD#16#00FF;
+	#e := MsgID#UNDEF;
+	#f := Process.MsgID#Start;
+	#g := _.Process.MsgID#Start;
+	#h := D#2024-01-15;
+	#i := TOD#12:30:00.000;
+	#j := DTL#2024-01-15-12:30:00;
+END_FUNCTION
+
+---
+
+(source_file
+  (function_declaration
+    (db_identifier)
+    (type
+      (elementary_type))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (int_literal
+          (based_literal))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (typed_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (date_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (time_of_day_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (date_time_literal)))))

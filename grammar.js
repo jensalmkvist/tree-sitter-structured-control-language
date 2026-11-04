@@ -29,7 +29,7 @@
 // TIA Portal exports use mixed case (e.g. "Array", "Of", "Begin") — these
 // are covered by adding the most common mixed-case variants explicitly.
 // ---------------------------------------------------------------------------
-function kw(word) {
+function kw(word, ...extra) {
   const upper = word.toUpperCase();
   const lower = word.toLowerCase();
 
@@ -43,7 +43,7 @@ function kw(word) {
     .join('_');
 
   // Deduplicate
-  const variants = [...new Set([upper, lower, title, compoundTitle])];
+  const variants = [...new Set([upper, lower, title, compoundTitle, ...extra])];
   return choice(...variants);
 }
 
@@ -79,9 +79,15 @@ module.exports = grammar({
 
     namespace_declaration: $ => seq(
       kw('NAMESPACE'),
-      field('namespace_name', $.identifier),
+      field('namespace_name', $.namespace_name),
       repeat($._source_item),
       kw('END_NAMESPACE')
+    ),
+
+    // `Objects`, `Objects.Sub`, or quoted when the name is restricted.
+    namespace_name: $ => seq(
+      choice($.identifier, $.db_identifier),
+      repeat(seq('.', choice($.identifier, $.db_identifier)))
     ),
 
     _source_item: $ => choice(
@@ -113,10 +119,7 @@ module.exports = grammar({
     function_block_declaration: $ => seq(
       kw('FUNCTION_BLOCK'),
       field('name', $._block_name),
-      optional($.title_pragma),
-      repeat($.attribute_pragma),
-      optional($.version_pragma),
-      optional($.block_attr),
+      repeat($._block_header_item),
       repeat($.var_block),
       optional(kw('BEGIN')),
       repeat($._statement),
@@ -128,10 +131,7 @@ module.exports = grammar({
       field('name', $._block_name),
       ':',
       field('return_type', $.type),
-      optional($.title_pragma),
-      repeat($.attribute_pragma),
-      optional($.version_pragma),
-      optional($.block_attr),
+      repeat($._block_header_item),
       repeat($.var_block),
       optional(kw('BEGIN')),
       repeat($._statement),
@@ -141,10 +141,7 @@ module.exports = grammar({
     organization_block_declaration: $ => seq(
       kw('ORGANIZATION_BLOCK'),
       field('name', $._block_name),
-      optional($.title_pragma),
-      repeat($.attribute_pragma),
-      optional($.version_pragma),
-      optional($.block_attr),
+      repeat($._block_header_item),
       repeat($.var_block),
       optional(kw('BEGIN')),
       repeat($._statement),
@@ -154,19 +151,21 @@ module.exports = grammar({
     data_block_declaration: $ => seq(
       kw('DATA_BLOCK'),
       field('name', $._block_name),
-      optional($.title_pragma),
-      repeat($.attribute_pragma),
-      optional($.version_pragma),
-      optional($.block_attr),
-      repeat($.var_block),
-      // Exported DB instance/type binding line, e.g. `_.Objects.MyType`
+      repeat($._block_header_item),
+      repeat(choice($.var_block, seq($.struct_type, ';'))),
+      // Exported DB type line of an instance DB or a DB of a type:
+      // `"FB_name"`, `_.Objects.MyType`, `TON_TIME` (library FB/SDT)
       optional(field('instance_type', $.db_instance_type)),
       optional(kw('BEGIN')),
       repeat($._statement),
       kw('END_DATA_BLOCK')
     ),
 
-    db_instance_type: $ => $.qualified_dotted_type,
+    db_instance_type: $ => choice(
+      $.identifier,
+      $.db_identifier,
+      $.qualified_dotted_type
+    ),
 
     // TYPE "UDT_Name"  -or-  TYPE UDT_Name
     //   VERSION : n.n          (optional, TIA export)
@@ -178,8 +177,7 @@ module.exports = grammar({
     struct_type_declaration: $ => seq(
       kw('TYPE'),
       field('name', $._block_name),
-      repeat($.attribute_pragma),
-      optional($.version_pragma),
+      repeat($._block_header_item),
       $.struct_type,
       optional(';'),
       kw('END_TYPE')
@@ -192,24 +190,33 @@ module.exports = grammar({
     // END_TYPE
     nvt_type_declaration: $ => seq(
       kw('TYPE'),
+      repeat1($.nvt_type),
+      kw('END_TYPE')
+    ),
+
+    // One named value type:  MsgID : USInt (UNDEF := 0, "Stop x" := 2);
+    nvt_type: $ => seq(
       field('name', choice($.identifier, $.db_identifier)),
       ':',
       field('base_type', choice($.elementary_type, $.identifier)),
       '(',
       optional(seq(
         $.nvt_member,
-        repeat(seq(',', $.nvt_member))
+        repeat(seq(',', $.nvt_member)),
+        optional(',')
       )),
       ')',
-      optional(';'),
-      kw('END_TYPE')
+      optional(';')
     ),
 
     nvt_member: $ => seq(
-      field('name', $.identifier),
+      field('name', choice($.identifier, $.db_identifier)),
       ':=',
-      field('value', $.int_literal)
+      field('value', $.signed_int_literal)
     ),
+
+    // -32768, +5, 16#7FFF
+    signed_int_literal: $ => seq(optional(choice('-', '+')), $.int_literal),
 
     // Block name: plain identifier or quoted "name with spaces"
     _block_name: $ => choice($.identifier, $.db_identifier),
@@ -220,12 +227,27 @@ module.exports = grammar({
 
     attribute_pragma: $ => seq(
       '{',
-      $.identifier,
-      ':=',
-      $.string_literal,
-      repeat(seq(';', $.identifier, ':=', $.string_literal)),
+      $.attribute,
+      repeat(seq(';', $.attribute)),
       optional(';'),
       '}'
+    ),
+
+    attribute: $ => seq(
+      field('name', $.identifier),
+      ':=',
+      field('value', choice($.string_literal, $.identifier, $.int_literal, $.float_literal))
+    ),
+
+    // Block header lines, in any order. Portal writes
+    //   TITLE = …, { … }, AUTHOR / FAMILY / NAME : …, VERSION : n.n,
+    //   UNLINKED / READ_ONLY / NON_RETAIN (DBs), CODE_VERSION1
+    _block_header_item: $ => choice(
+      $.title_pragma,
+      $.attribute_pragma,
+      $.header_property,
+      $.version_pragma,
+      $.block_attr,
     ),
 
     // VERSION : 0.1  — TIA metadata line present in all exported block headers
@@ -235,17 +257,32 @@ module.exports = grammar({
       $.float_literal
     ),
 
-    // TITLE = '...' / TITLE = "..." — TIA export line after block name (esp. OBs)
+    // AUTHOR : SafeSys   NAME : F_GLOBDB   FAMILY : 'a b'
+    // Portal quotes the value only when it has a special character or is a
+    // keyword; otherwise it is a bare name.
+    header_property: $ => seq(
+      field('key', choice(kw('AUTHOR'), kw('FAMILY'), kw('NAME'))),
+      ':',
+      field('value', choice($.identifier, $.string_literal))
+    ),
+
+    // TITLE = <rest of line>. Portal prints the stored title text as-is, so it
+    // can be quoted ("Main Program Sweep (Cycle)") or plain text.
     title_pragma: $ => seq(
       kw('TITLE'),
       '=',
-      choice($.string_literal, $.wstring_literal)
+      field('value', $.title_text)
     ),
 
-    // RETAIN / NON_RETAIN as a bare block-level qualifier (outside any VAR block)
+    title_text: $ => token(prec(-1, /[^\s][^\r\n]*/)),
+
+    // Block-level qualifiers outside any VAR block
     block_attr: $ => choice(
       kw('RETAIN'),
-      kw('NON_RETAIN')
+      kw('NON_RETAIN'),
+      kw('UNLINKED'),
+      kw('READ_ONLY'),
+      kw('CODE_VERSION1')
     ),
 
     // NOTE: BEGIN is inlined directly into each block declaration as
@@ -277,16 +314,56 @@ module.exports = grammar({
       kw('RETAIN'),
       kw('NON_RETAIN'),
       kw('CONSTANT'),
-      kw('PERSISTENT')
+      kw('PERSISTENT'),
+      kw('DB_SPECIFIC')
     ),
 
     var_declaration: $ => seq(
       field('name', choice($.identifier, $.db_identifier)),
       optional($.attribute_pragma),
+      optional(seq(kw('AT'), field('at', choice($.identifier, $.db_identifier)))),
       ':',
       field('type', $.type),
-      optional(seq(':=', field('initial_value', $.expression))),
+      optional(seq(':=', field('initial_value', $._initial_value))),
       ';'
+    ),
+
+    // Start value of a declaration: an expression, a structure value
+    // `((), (), TRUE, 3)` or an array value `[3(0), 1]`.
+    _initial_value: $ => choice(
+      $.expression,
+      $.structure_value,
+      $.array_value
+    ),
+
+    // A single scalar in parentheses, `(5)`, stays a parenthesised expression.
+    structure_value: $ => seq(
+      '(',
+      optional(choice(
+        seq($._initial_value, repeat1(seq(',', $._initial_value))),
+        $.structure_value,
+        $.array_value
+      )),
+      ')'
+    ),
+
+    array_value: $ => seq(
+      '[',
+      optional(seq($._array_value_item, repeat(seq(',', $._array_value_item)))),
+      ']'
+    ),
+
+    _array_value_item: $ => choice(
+      $._initial_value,
+      $.repeated_value
+    ),
+
+    // n(v): v repeated n times
+    repeated_value: $ => seq(
+      field('count', $.int_literal),
+      '(',
+      optional(field('value', $._initial_value)),
+      ')'
     ),
 
     // =========================================================================
@@ -315,12 +392,22 @@ module.exports = grammar({
     ),
 
     // lvalue := expr ;
+    // a := b;   a += 1;   a := b := c;   (chained)   ref ?= variant;
     assignment_statement: $ => seq(
       field('left', $.lvalue),
-      ':=',
-      field('right', $.expression),
+      field('operator', $._assignment_operator),
+      field('right', choice($.expression, $.assignment_expression)),
       ';'
     ),
+
+    // The inner part of a chained assignment `#a := #b := TIME_TCK();`
+    assignment_expression: $ => seq(
+      field('left', $.lvalue),
+      field('operator', $._assignment_operator),
+      field('right', choice($.expression, $.assignment_expression))
+    ),
+
+    _assignment_operator: $ => choice(':=', '+=', '-=', '*=', '/=', '?='),
 
     // FB_or_func( args ) ;
     invocation_statement: $ => seq(
@@ -358,8 +445,10 @@ module.exports = grammar({
       optional($.statement_list)
     ),
 
+    // `ELSE :` is accepted too (Portal keeps a colon after ELSE in CASE).
     else_clause: $ => seq(
       kw('ELSE'),
+      optional(':'),
       optional($.statement_list)
     ),
 
@@ -433,9 +522,12 @@ module.exports = grammar({
 
     _case_value: $ => choice(
       $.int_literal,
+      alias($._negative_int, $.signed_int_literal),
       $.typed_literal,
       $.lvalue
     ),
+
+    _negative_int: $ => seq('-', $.int_literal),
 
     // =========================================================================
     // Regions
@@ -502,41 +594,58 @@ module.exports = grammar({
     // Using int_literal (not expression) prevents the lexer from consuming
     // the leading digit of "0..999" as the start of a float_literal (0.)
     // before it can see the second dot.
-    array_dimension: $ => seq(
-      field('low', $.int_literal),
-      '..',
-      field('high', $.int_literal)
+    array_dimension: $ => choice(
+      seq(
+        field('low', $._array_bound),
+        '..',
+        field('high', $._array_bound)
+      ),
+      '*'
+    ),
+
+    // 0, -5, or a constant: MAX, "MAX", #MAX
+    _array_bound: $ => choice(
+      $.int_literal,
+      alias($._negative_int, $.signed_int_literal),
+      $.identifier,
+      $.db_identifier,
+      seq('#', $.identifier)
     ),
 
     // STRING[n]  or  WSTRING[n]
     string_type: $ => seq(
-      choice(kw('STRING'), kw('WSTRING')),
+      choice(kw('STRING'), kw('WSTRING', 'WString')),
       '[',
-      field('length', $.int_literal),
+      field('length', choice($.int_literal, $.identifier, $.db_identifier, seq('#', $.identifier))),
       ']'
     ),
 
+    // Extra spellings are the ones Portal prints (TypeClass names,
+    // writer-answers.md §1.1), e.g. `USInt`, `LReal`, `Time_Of_Day`.
     elementary_type: $ => choice(
       // Void return type (used in FUNCTION declarations)
       kw('VOID'),
       // Bit / byte types
-      kw('BOOL'),  kw('BYTE'),  kw('WORD'),  kw('DWORD'), kw('LWORD'),
+      kw('BOOL'),  kw('BYTE'),  kw('WORD'),  kw('DWORD', 'DWord'), kw('LWORD', 'LWord'),
       // Signed integers
-      kw('SINT'),  kw('INT'),   kw('DINT'),  kw('LINT'),
+      kw('SINT', 'SInt'),  kw('INT'),   kw('DINT', 'DInt'),  kw('LINT', 'LInt'),
       // Unsigned integers
-      kw('USINT'), kw('UINT'),  kw('UDINT'), kw('ULINT'),
+      kw('USINT', 'USInt'), kw('UINT', 'UInt'),  kw('UDINT', 'UDInt'), kw('ULINT', 'ULInt'),
       // Reals
-      kw('REAL'),  kw('LREAL'),
+      kw('REAL'),  kw('LREAL', 'LReal'),
       // Duration
-      kw('TIME'),  kw('LTIME'),
+      kw('TIME'),  kw('LTIME', 'LTime'), kw('S5TIME', 'S5Time'),
       // Date and time
-      kw('DATE'),  kw('LDATE'),
+      kw('DATE'),  kw('LDATE', 'LDate'),
       kw('TIME_OF_DAY'),   kw('TOD'),
-      kw('LTIME_OF_DAY'),  kw('LTOD'),
+      kw('LTIME_OF_DAY', 'LTime_Of_Day'),  kw('LTOD'),
       kw('DATE_AND_TIME'), kw('DT'),
+      kw('LDT'), kw('DTL'),
       // Characters / strings
-      kw('CHAR'),    kw('WCHAR'),
-      kw('STRING'),  kw('WSTRING')
+      kw('CHAR'),    kw('WCHAR', 'WChar'),
+      kw('STRING'),  kw('WSTRING', 'WString'),
+      // Generic
+      kw('VARIANT')
     ),
 
     // =========================================================================
@@ -573,6 +682,14 @@ module.exports = grammar({
       optional('^')
     ),
 
+    // Bit/byte/word slice of a variable: `.%X3`, `.%B1`, `.%W0`, `.%D0`
+    slice: $ => token(seq('%', /[XxBbWwDd]/, /\d+/)),
+
+    // Direct I/O access suffix: `"Tag":P`
+    peripheral_access: $ => token.immediate(/:[Pp]/),
+
+    _access_tail: $ => seq('.', choice($._deref_access_segment, $.slice)),
+
     // SCL root: either a local (#) variable or a plain/DB access chain.
     //
     //   #localVar               local variable in FB/FC
@@ -587,12 +704,13 @@ module.exports = grammar({
       seq(
         '#',
         $._deref_access_segment,
-        repeat(seq('.', $._deref_access_segment))
+        repeat($._access_tail)
       ),
       // DB or plain chain (no sigil)
       seq(
         $._deref_access_segment,
-        repeat(seq('.', $._deref_access_segment))
+        repeat($._access_tail),
+        optional($.peripheral_access)
       )
     ),
 
@@ -663,11 +781,16 @@ module.exports = grammar({
     // Wrapped in token() so the lexer commits atomically.
     // Float before int (so 3.14 isn't consumed as 3), based before decimal.
     // Identifier suffix last: NVT enumeration literals (MODE#MANUAL).
+    // Named values may carry a namespace prefix: Process.MsgID#UNDEF,
+    // _.Process.MsgID#UNDEF (resolution.md §2.6).
     typed_literal: $ => token(seq(
+      /([a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*\.)*/,
       /[a-zA-ZÀ-ÖØ-öø-ÿ_][a-zA-ZÀ-ÖØ-öø-ÿ0-9_]*/,
       '#',
       choice(
-        /TRUE|FALSE/,
+        /[tT][rR][uU][eE]|[fF][aA][lL][sS][eE]/,
+        /'(?:[^'$]|\$.)*'/,          // STRING#'abc', CHAR#'a'
+        /"(?:[^"$]|\$.)*"/,          // WSTRING#"abc"
         /\d+#[0-9A-Fa-f][0-9A-Fa-f_]*/,
         /[+\-]?\d[\d_]*\.[\d_]+([eE][+\-]?\d[\d_]*)?/,
         /[+\-]?\d[\d_]*/,
@@ -690,36 +813,37 @@ module.exports = grammar({
 
     // T#5s  TIME#1h30m20s500ms  LT#...  LTIME#...
     time_literal: $ => token(seq(
-      choice('LTIME', 'LT', 'TIME', 'T'),
+      /[lL][tT][iI][mM][eE]|[lL][tT]|[tT][iI][mM][eE]|[tT]/,
       '#',
       optional('-'),
-      /(\d+\.?\d*(d|h|ms|m|us|s|ns))+/
+      // units in any case, as Portal prints them: T#3S, T#500ms, T#1h_30m
+      /(\d+(\.\d+)?([dD]|[hH]|[mM][sS]|[mM]|[uU][sS]|[sS]|[nN][sS])_?)+/
     )),
 
     // S5TIME / S5T — Siemens-specific legacy timer type
     s5time_literal: $ => token(seq(
-      choice('S5TIME', 'S5T'),
+      /[sS]5[tT][iI][mM][eE]|[sS]5[tT]/,
       '#',
-      /(\d+\.?\d*(d|h|ms|m|s))+/
+      /(\d+(\.\d+)?([dD]|[hH]|[mM][sS]|[mM]|[sS])_?)+/
     )),
 
     // D#2024-01-15  DATE#2024-01-15  LD#...  LDATE#...
     date_literal: $ => token(seq(
-      choice('LDATE', 'LD', 'DATE', 'D'),
+      /[lL][dD][aA][tT][eE]|[lL][dD]|[dD][aA][tT][eE]|[dD]/,
       '#',
       /\d{4}-\d{2}-\d{2}/
     )),
 
     // TOD#12:30:00  TIME_OF_DAY#...  LTOD#...
     time_of_day_literal: $ => token(seq(
-      choice('LTIME_OF_DAY', 'LTOD', 'TIME_OF_DAY', 'TOD'),
+      /[lL][tT][iI][mM][eE]_[oO][fF]_[dD][aA][yY]|[lL][tT][oO][dD]|[tT][iI][mM][eE]_[oO][fF]_[dD][aA][yY]|[tT][oO][dD]/,
       '#',
       /\d{2}:\d{2}:\d{2}(\.\d+)?/
     )),
 
-    // DT#2024-01-15-12:30:00  DATE_AND_TIME#...  LDT#...
+    // DT#2024-01-15-12:30:00  DATE_AND_TIME#...  LDT#...  DTL#...
     date_time_literal: $ => token(seq(
-      choice('LDATE_AND_TIME', 'LDT', 'DATE_AND_TIME', 'DT'),
+      /[lL][dD][aA][tT][eE]_[aA][nN][dD]_[tT][iI][mM][eE]|[lL][dD][tT]|[dD][aA][tT][eE]_[aA][nN][dD]_[tT][iI][mM][eE]|[dD][tT][lL]|[dD][tT]/,
       '#',
       /\d{4}-\d{2}-\d{2}-\d{2}:\d{2}:\d{2}(\.\d+)?/
     )),

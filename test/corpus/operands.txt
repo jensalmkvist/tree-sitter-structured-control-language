@@ -1,0 +1,95 @@
+================================================================================
+Operand forms
+================================================================================
+
+FUNCTION_BLOCK "Ops"
+BEGIN
+	#local := "Global";
+	#x := _.Ns.name;
+	#y := "DB".member[#i].x;
+	#x.%X0 := #y.%X3;
+	#z := #b.%B1;
+	#w := "Tag":P;
+	#inst.TON(IN := #start, PT := T#3S, Q => #done);
+	#inst(IN := TRUE);
+END_FUNCTION_BLOCK
+
+---
+
+(source_file
+  (function_block_declaration
+    (db_identifier)
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (db_identifier))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (identifier)
+          (identifier)
+          (identifier))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (db_identifier)
+          (identifier)
+          (subscript
+            (expression
+              (lvalue
+                (identifier))))
+          (identifier))))
+    (assignment_statement
+      (lvalue
+        (identifier)
+        (slice))
+      (expression
+        (lvalue
+          (identifier)
+          (slice))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (identifier)
+          (slice))))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (lvalue
+          (db_identifier)
+          (peripheral_access))))
+    (invocation_statement
+      (lvalue
+        (identifier)
+        (identifier))
+      (argument_list
+        (argument
+          (identifier)
+          (expression
+            (lvalue
+              (identifier))))
+        (argument
+          (identifier)
+          (expression
+            (time_literal)))
+        (argument
+          (identifier)
+          (lvalue
+            (identifier)))))
+    (invocation_statement
+      (lvalue
+        (identifier))
+      (argument_list
+        (argument
+          (identifier)
+          (expression
+            (bool_literal)))))))

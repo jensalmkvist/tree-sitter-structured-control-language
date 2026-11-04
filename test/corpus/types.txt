@@ -1,0 +1,274 @@
+================================================================================
+UDT with struct head line attributes, AT, start values
+================================================================================
+
+TYPE "U"
+{ Published := 'FALSE' }
+VERSION : 0.1
+   STRUCT
+      s {ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Struct   // c
+         x { a := 'q'; b := 'r'; c := 's'} : Int;   // comment
+         y {S7_SetPoint := 'True'} : Bool := TRUE;
+      END_STRUCT;
+      arr : Array[0..3] of "Other";
+      neg : Array[-2..2] of Int;
+      v : "Other" := ((), (), TRUE, 3);
+      w : Array[0..3] of Int := [3(0), 1];
+      ov AT arr : Array[0..1] of Byte;
+      m : _.Process.STATE := STATE#Idle;
+   END_STRUCT;
+
+END_TYPE
+
+---
+
+(source_file
+  (struct_type_declaration
+    (db_identifier)
+    (attribute_pragma
+      (attribute
+        (identifier)
+        (string_literal)))
+    (version_pragma
+      (float_literal))
+    (struct_type
+      (var_declaration
+        (identifier)
+        (attribute_pragma
+          (attribute
+            (identifier)
+            (string_literal))
+          (attribute
+            (identifier)
+            (string_literal))
+          (attribute
+            (identifier)
+            (string_literal)))
+        (type
+          (struct_type
+            (comment)
+            (var_declaration
+              (identifier)
+              (attribute_pragma
+                (attribute
+                  (identifier)
+                  (string_literal))
+                (attribute
+                  (identifier)
+                  (string_literal))
+                (attribute
+                  (identifier)
+                  (string_literal)))
+              (type
+                (elementary_type)))
+            (comment)
+            (var_declaration
+              (identifier)
+              (attribute_pragma
+                (attribute
+                  (identifier)
+                  (string_literal)))
+              (type
+                (elementary_type))
+              (expression
+                (bool_literal))))))
+      (var_declaration
+        (identifier)
+        (type
+          (array_type
+            (array_dimension
+              (int_literal)
+              (int_literal))
+            (type
+              (db_identifier)))))
+      (var_declaration
+        (identifier)
+        (type
+          (array_type
+            (array_dimension
+              (signed_int_literal
+                (int_literal))
+              (int_literal))
+            (type
+              (elementary_type)))))
+      (var_declaration
+        (identifier)
+        (type
+          (db_identifier))
+        (structure_value
+          (structure_value)
+          (structure_value)
+          (expression
+            (bool_literal))
+          (expression
+            (int_literal))))
+      (var_declaration
+        (identifier)
+        (type
+          (array_type
+            (array_dimension
+              (int_literal)
+              (int_literal))
+            (type
+              (elementary_type))))
+        (array_value
+          (repeated_value
+            (int_literal)
+            (expression
+              (int_literal)))
+          (expression
+            (int_literal))))
+      (var_declaration
+        (identifier)
+        (identifier)
+        (type
+          (array_type
+            (array_dimension
+              (int_literal)
+              (int_literal))
+            (type
+              (elementary_type)))))
+      (var_declaration
+        (identifier)
+        (type
+          (qualified_dotted_type
+            (identifier)
+            (identifier)
+            (identifier)))
+        (expression
+          (typed_literal))))))
+
+================================================================================
+Portal's spelling of elementary types
+================================================================================
+
+TYPE "Types"
+VERSION : 0.1
+   STRUCT
+      a : USInt;
+      b : DInt;
+      c : LReal;
+      d : DWord;
+      e : Time_Of_Day;
+      f : LTime_Of_Day;
+      g : WString[10];
+      h : String[LEN];
+   END_STRUCT;
+
+END_TYPE
+
+---
+
+(source_file
+  (struct_type_declaration
+    (db_identifier)
+    (version_pragma
+      (float_literal))
+    (struct_type
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (elementary_type)))
+      (var_declaration
+        (identifier)
+        (type
+          (string_type
+            (int_literal))))
+      (var_declaration
+        (identifier)
+        (type
+          (string_type
+            (identifier)))))))
+
+================================================================================
+Named value types
+================================================================================
+
+NAMESPACE Process
+TYPE
+  MsgID : USInt (UNDEF := 0, Start := 1, "Stop x" := 2);
+  Lim : Int (UNDERFLOW := -32768, OK := 0, OVER := 16#7FFF);
+END_TYPE
+END_NAMESPACE
+
+---
+
+(source_file
+  (namespace_declaration
+    (namespace_name
+      (identifier))
+    (nvt_type_declaration
+      (nvt_type
+        (identifier)
+        (elementary_type)
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))
+        (nvt_member
+          (db_identifier)
+          (signed_int_literal
+            (int_literal))))
+      (nvt_type
+        (identifier)
+        (elementary_type)
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal
+              (based_literal))))))))
+
+================================================================================
+Named value type on one line
+================================================================================
+
+NAMESPACE UnitA
+TYPE T1 : INT (A := 1); END_TYPE
+END_NAMESPACE
+
+---
+
+(source_file
+  (namespace_declaration
+    (namespace_name
+      (identifier))
+    (nvt_type_declaration
+      (nvt_type
+        (identifier)
+        (elementary_type)
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))))))
