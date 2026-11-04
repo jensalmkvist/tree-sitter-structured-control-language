@@ -110,7 +110,7 @@
  (#match? @number.float "#[+-]?[0-9][0-9_]*\\."))
 ;; Named value of a named value type: MsgID#UNDEF, _.Process.MsgID#UNDEF
 ((typed_literal) @constant
- (#match? @constant "^[^#]+#[A-Za-z_][^#'\"]*$"))
+ (#match? @constant "^[^#]+#[A-Za-zÀ-ÖØ-öø-ÿ_][^#'\"]*$"))
 ((typed_literal) @string
  (#match? @string "#['\"]"))
 ((typed_literal) @boolean
@@ -128,6 +128,8 @@
 ;; ... except the root: "x" global (DB, tag, ...), #x local / x unquoted
 (lvalue . (identifier)    @variable)
 (lvalue . (db_identifier) @variable.global)
+;; #"name with blanks" is a local too (quoted only because of its characters)
+(lvalue "#" . (db_identifier) @variable)
 
 ;; Built-in variables of a block
 ((lvalue . (identifier) @variable.builtin)
@@ -147,11 +149,14 @@
 ;; User blocks: "FC"(), Fc(), #inst(), "InstDB"(), _.Ns.Fc()
 (invocation_statement name: (lvalue (_) @function.call .))
 (call_expression      name: (lvalue (_) @function.call .))
+;; Multi-instance array element: #inst[#i](...) — the callee is the array name
+(invocation_statement name: (lvalue (_) @function.call . (subscript) .))
+(call_expression      name: (lvalue (_) @function.call . (subscript) .))
 
-;; Instructions of the PLC library, also after an IEC timer member:
-;; "DB".t.TON(...), #t.TON(...)
-([(invocation_statement name: (lvalue (identifier) @function.builtin .))
-  (call_expression      name: (lvalue (identifier) @function.builtin .))]
+;; Instructions of the PLC library: a callee that is a single plain name.
+;; Names are matched in the canonical case Portal exports them in.
+([(invocation_statement name: (lvalue . (identifier) @function.builtin .))
+  (call_expression      name: (lvalue . (identifier) @function.builtin .))]
  (#any-of? @function.builtin
   "TON" "TOF" "TP" "TONR" "CTU" "CTD" "CTUD" "R_TRIG" "F_TRIG"
   "TIME_TCK" "RUNTIME" "RD_SYS_T" "RD_LOC_T" "WR_SYS_T" "WR_LOC_T" "SET_TIMEZONE"
@@ -173,9 +178,18 @@
   "Gen_UsrMsg" "Program_Alarm" "LED" "GET_DIAG" "DeviceStates" "ModuleStates"))
 
 ;; Conversion functions X_TO_Y (INT_TO_REAL, DINT_TO_TIME, ...)
-([(invocation_statement name: (lvalue (identifier) @function.builtin .))
-  (call_expression      name: (lvalue (identifier) @function.builtin .))]
+([(invocation_statement name: (lvalue . (identifier) @function.builtin .))
+  (call_expression      name: (lvalue . (identifier) @function.builtin .))]
  (#match? @function.builtin "^[A-Za-z0-9]+_[Tt][Oo]_[A-Za-z0-9]+$"))
+
+;; IEC timer / counter called through an instance member: "DB".t.TON(...), #t.TON(...)
+([(invocation_statement name: (lvalue (_) "." (identifier) @function.builtin .))
+  (call_expression      name: (lvalue (_) "." (identifier) @function.builtin .))]
+ (#any-of? @function.builtin "TON" "TOF" "TP" "TONR" "CTU" "CTD" "CTUD"))
+
+;; A local instance is a user call whatever its name: #TON(...), #Delay_To_Off(...)
+(invocation_statement name: (lvalue "#" . (_) @function.call .))
+(call_expression      name: (lvalue "#" . (_) @function.call .))
 
 ;; Calls through the global namespace: _.Ns.Sub.Fc() — namespaces, then the callee
 ;; (one match per call, so the steps between are captured with a quantifier)
@@ -232,7 +246,8 @@
 (var_declaration at: (_) @variable)
 
 ;; Local constants: names declared in VAR CONSTANT
-;; (one match per section: a quantifier, since the matches share @_block)
+;; (one match per section: a quantifier, since the matches share @_block;
+;; a helper capture on the CONSTANT keyword itself would clear its highlight)
 ((var_block
   (var_declaration name: (_) @constant)+) @_block
  (#match? @_block "^[Vv][Aa][Rr]\\s+[Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt]"))

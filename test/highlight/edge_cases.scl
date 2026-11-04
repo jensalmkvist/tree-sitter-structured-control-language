@@ -1,0 +1,32 @@
+FUNCTION_BLOCK "FB_Edge"
+   VAR CONSTANT
+      "Max Len" : Int := 9;
+//    ^ constant
+   END_VAR
+   VAR // a comment
+      "my var" : Int;
+//    ^ variable
+      TON : TON_TIME;
+      arr : Array[0..1] of TON_TIME;
+   END_VAR
+BEGIN
+   #"my var" := #"Max Len";
+//  ^ variable
+//               ^ constant
+   #Delay_To_Off(x := 1);
+//  ^ function.call
+   #TON(IN := TRUE, PT := T#1S);
+//  ^ function.call
+   #arr[0](IN := TRUE, PT := T#1S);
+//  ^ function.call
+   #a := #inst.Get_To_Pos(x := 1);
+//             ^ function.call
+   #t.TON(IN := TRUE, PT := T#1S);
+//    ^ function.builtin
+   #b := INT_TO_REAL(#a);
+//       ^ function.builtin
+   MOVE_BLK(IN := #x[0], COUNT := 2, OUT => #y[0]);
+// ^ function.builtin
+   #c := MsgID#Ärende;
+//       ^ constant
+END_FUNCTION_BLOCK

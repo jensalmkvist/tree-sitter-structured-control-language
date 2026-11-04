@@ -21,7 +21,8 @@
 ; an inline STRUCT are not `#` names of the block).  Plain @local.definition
 ; is used (no .var/.parameter suffix) because tree-sitter-highlight only knows
 ; the plain name; a reference then takes the highlight of its definition, so a
-; `#MAX` declared in VAR CONSTANT is shown as @constant where it is used.
+; `#MAX` declared in VAR CONSTANT is shown as @constant where it is used by
+; tree-sitter-highlight (Neovim does not use locals for highlighting).
 ; -----------------------------------------------------------------------------
 
 (var_block
@@ -34,14 +35,14 @@
 ; The parents of an operand are listed instead of a bare (lvalue ...) so that
 ; the callee of `#inst(...)` is not a reference: a reference takes the
 ; highlight of its definition, which would hide @function.call.
-(expression            (lvalue "#" . (identifier) @local.reference))
-(assignment_statement  left: (lvalue "#" . (identifier) @local.reference))
-(assignment_expression left: (lvalue "#" . (identifier) @local.reference))
-(for_statement     variable: (lvalue "#" . (identifier) @local.reference))
-(argument               out: (lvalue "#" . (identifier) @local.reference))
-(case_selector             (lvalue "#" . (identifier) @local.reference))
+(expression            (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
+(assignment_statement  left: (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
+(assignment_expression left: (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
+(for_statement     variable: (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
+(argument               out: (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
+(case_selector             (lvalue "#" . [(identifier) (db_identifier)] @local.reference))
 ; `#inst.member(...)` / `#t.TON(...)`: the root is a reference, the callee is not
-(invocation_statement name: (lvalue "#" . (identifier) @local.reference (identifier)))
-(call_expression      name: (lvalue "#" . (identifier) @local.reference (identifier)))
+(invocation_statement name: (lvalue "#" . [(identifier) (db_identifier)] @local.reference (identifier)))
+(call_expression      name: (lvalue "#" . [(identifier) (db_identifier)] @local.reference (identifier)))
 (array_dimension "#" . (identifier) @local.reference)
 (string_type "#" . (identifier) @local.reference)
