@@ -195,7 +195,10 @@ module.exports = grammar({
     ),
 
     // One named value type:  MsgID : USInt (UNDEF := 0, "Stop x" := 2);
+    // Portal writes `{PUBLISHED := 'TRUE'}` on its own line before a
+    // published named value type.
     nvt_type: $ => seq(
+      optional($.attribute_pragma),
       field('name', choice($.identifier, $.db_identifier)),
       ':',
       field('base_type', choice($.elementary_type, $.identifier)),
@@ -828,24 +831,25 @@ module.exports = grammar({
     )),
 
     // D#2024-01-15  DATE#2024-01-15  LD#...  LDATE#...
+    // Portal leaves out leading zeros: DTL#2026-9-29-14:35:15.275318400
     date_literal: $ => token(seq(
       /[lL][dD][aA][tT][eE]|[lL][dD]|[dD][aA][tT][eE]|[dD]/,
       '#',
-      /\d{4}-\d{2}-\d{2}/
+      /\d{4}-\d{1,2}-\d{1,2}/
     )),
 
     // TOD#12:30:00  TIME_OF_DAY#...  LTOD#...
     time_of_day_literal: $ => token(seq(
       /[lL][tT][iI][mM][eE]_[oO][fF]_[dD][aA][yY]|[lL][tT][oO][dD]|[tT][iI][mM][eE]_[oO][fF]_[dD][aA][yY]|[tT][oO][dD]/,
       '#',
-      /\d{2}:\d{2}:\d{2}(\.\d+)?/
+      /\d{1,2}:\d{1,2}:\d{1,2}(\.\d+)?/
     )),
 
     // DT#2024-01-15-12:30:00  DATE_AND_TIME#...  LDT#...  DTL#...
     date_time_literal: $ => token(seq(
       /[lL][dD][aA][tT][eE]_[aA][nN][dD]_[tT][iI][mM][eE]|[lL][dD][tT]|[dD][aA][tT][eE]_[aA][nN][dD]_[tT][iI][mM][eE]|[dD][tT][lL]|[dD][tT]/,
       '#',
-      /\d{4}-\d{2}-\d{2}-\d{2}:\d{2}:\d{2}(\.\d+)?/
+      /\d{4}-\d{1,2}-\d{1,2}-\d{1,2}:\d{1,2}:\d{1,2}(\.\d+)?/
     )),
 
     // Single-quoted string: 'hello'  '$'' is an escaped quote

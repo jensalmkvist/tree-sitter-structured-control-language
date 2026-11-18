@@ -740,6 +740,18 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "attribute_pragma"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "FIELD",
           "name": "name",
           "content": {
@@ -4874,7 +4886,7 @@
           },
           {
             "type": "PATTERN",
-            "value": "\\d{4}-\\d{2}-\\d{2}"
+            "value": "\\d{4}-\\d{1,2}-\\d{1,2}"
           }
         ]
       }
@@ -4894,7 +4906,7 @@
           },
           {
             "type": "PATTERN",
-            "value": "\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?"
+            "value": "\\d{1,2}:\\d{1,2}:\\d{1,2}(\\.\\d+)?"
           }
         ]
       }
@@ -4914,7 +4926,7 @@
           },
           {
             "type": "PATTERN",
-            "value": "\\d{4}-\\d{2}-\\d{2}-\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?"
+            "value": "\\d{4}-\\d{1,2}-\\d{1,2}-\\d{1,2}:\\d{1,2}:\\d{1,2}(\\.\\d+)?"
           }
         ]
       }
