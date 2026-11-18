@@ -272,3 +272,41 @@ END_NAMESPACE
           (identifier)
           (signed_int_literal
             (int_literal)))))))
+
+================================================================================
+Published named value type (attribute line before the name)
+================================================================================
+
+NAMESPACE Hardware
+	TYPE
+		{PUBLISHED := 'TRUE'} 
+		DriverErrors : DInt
+		(
+			NO_ERROR := 0,
+			DRIVE_FAULT := 3
+		);
+	END_TYPE
+END_NAMESPACE
+
+---
+
+(source_file
+  (namespace_declaration
+    (namespace_name
+      (identifier))
+    (nvt_type_declaration
+      (nvt_type
+        (attribute_pragma
+          (attribute
+            (identifier)
+            (string_literal)))
+        (identifier)
+        (elementary_type)
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))
+        (nvt_member
+          (identifier)
+          (signed_int_literal
+            (int_literal)))))))

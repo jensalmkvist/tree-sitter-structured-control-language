@@ -1406,6 +1406,10 @@
       "required": false,
       "types": [
         {
+          "type": "attribute_pragma",
+          "named": true
+        },
+        {
           "type": "nvt_member",
           "named": true
         }

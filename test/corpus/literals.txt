@@ -174,3 +174,39 @@ END_FUNCTION
         (identifier))
       (expression
         (date_time_literal)))))
+
+================================================================================
+Date and time without leading zeros (safety DB)
+================================================================================
+
+DATA_BLOCK "RTG1SysInfo"
+F_CTRL1
+BEGIN
+   F_SYSINFO.F_PROG_DAT := DTL#2026-9-29-14:35:15.275318400;
+   d := D#2026-9-1;
+   t := TOD#7:5:3;
+END_DATA_BLOCK
+
+---
+
+(source_file
+  (data_block_declaration
+    (db_identifier)
+    (db_instance_type
+      (identifier))
+    (assignment_statement
+      (lvalue
+        (identifier)
+        (identifier))
+      (expression
+        (date_time_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (date_literal)))
+    (assignment_statement
+      (lvalue
+        (identifier))
+      (expression
+        (time_of_day_literal)))))
